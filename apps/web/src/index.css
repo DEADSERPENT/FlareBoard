@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-neutral-200;
+  }
+
+  body {
+    @apply bg-neutral-50 text-neutral-900 font-sans antialiased;
+  }
+
+  html,
+  body,
+  #root {
+    @apply h-full;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(to right, theme('colors.primary.500'), theme('colors.primary.600'));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .card-hover {
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    transition: all 300ms;
+  }
+
+  .card-hover:hover {
+    box-shadow: 0 4px 16px rgba(249, 115, 22, 0.2);
+    border-color: theme('colors.primary.200');
+  }
+}
