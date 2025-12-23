@@ -7,6 +7,7 @@ export const dashboardsRouter = Router()
 dashboardsRouter.use(authenticate)
 
 dashboardsRouter.get('/', dashboardsController.getAll)
+dashboardsRouter.get('/default', dashboardsController.getDefaultDashboard)
 dashboardsRouter.get('/:id', dashboardsController.getById)
 dashboardsRouter.post('/', dashboardsController.create)
 dashboardsRouter.patch('/:id', dashboardsController.update)

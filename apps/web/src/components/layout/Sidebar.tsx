@@ -1,9 +1,10 @@
 import { NavLink } from 'react-router-dom'
-import { Home, FolderKanban, LayoutDashboard, Settings, Boxes } from 'lucide-react'
+import { Home, FolderKanban, LayoutDashboard, Settings, Boxes, Trello } from 'lucide-react'
 
 const navItems = [
   { path: '/', label: 'Home', icon: Home },
   { path: '/projects', label: 'Projects', icon: FolderKanban },
+  { path: '/kanban', label: 'Kanban Board', icon: Trello },
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/settings', label: 'Settings', icon: Settings },
 ]

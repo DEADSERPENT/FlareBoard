@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
-import type { AuthTokenPayload } from '@nebula/types'
+import type { AuthTokenPayload } from '@flareboard/types'
 import { AppError } from './errorHandler.js'
 
 export interface AuthRequest extends Request {

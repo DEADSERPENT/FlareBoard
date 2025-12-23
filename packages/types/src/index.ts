@@ -72,6 +72,35 @@ export interface Task {
   updatedAt: Date
 }
 
+export interface Comment {
+  id: string
+  taskId: string
+  userId: string
+  content: string
+  createdAt: Date
+  updatedAt: Date
+  user?: {
+    id: string
+    fullName: string
+    avatarUrl?: string
+  }
+}
+
+export interface Attachment {
+  id: string
+  taskId: string
+  fileName: string
+  fileUrl: string
+  fileSize: number
+  fileType: string
+  uploadedBy: string
+  createdAt: Date
+  uploader?: {
+    id: string
+    fullName: string
+  }
+}
+
 export interface CreateTaskRequest {
   projectId: string
   title: string
@@ -122,6 +151,7 @@ export interface Widget {
   type: WidgetType
   title: string
   settings: Record<string, any> // flexible config per widget type
+  position: number
   createdAt: Date
   updatedAt: Date
 }
@@ -176,6 +206,9 @@ export interface ActivityLog {
 export interface Notification {
   id: string
   userId: string
+  type: string
+  title?: string
+  message?: string
   content: string
   isRead: boolean
   actionUrl?: string

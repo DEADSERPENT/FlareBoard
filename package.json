@@ -19,15 +19,23 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
+    "db:generate": "npm run db:generate -w apps/api",
+    "db:push": "npm run db:push -w apps/api",
+    "db:seed": "npm run db:seed -w apps/api",
+    "db:migrate": "npm run db:migrate -w apps/api",
     "db:studio": "npm run db:studio -w apps/api"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
     "prettier": "^3.1.0",
+    "prisma": "^7.2.0",
     "typescript": "^5.3.3"
   },
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.2.0"
   }
 }

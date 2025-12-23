@@ -41,7 +41,7 @@ export const HomePage = () => {
   }, [tasks])
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, 'success' | 'warning' | 'info'> = {
+    const variants: Record<string, 'success' | 'warning' | 'info' | 'error' | 'default'> = {
       Done: 'success',
       InProgress: 'warning',
       Todo: 'info',

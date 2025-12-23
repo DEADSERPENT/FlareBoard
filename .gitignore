@@ -52,3 +52,7 @@ coverage
 # Misc
 .turbo
 .cache
+
+# markdown files
+VISION.md 
+QUICKSTART.md 
