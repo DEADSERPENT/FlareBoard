@@ -41,7 +41,7 @@ A modular, lightweight, highly customizable dashboard for teams, developers, and
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js >= 18.0.0
+- Node.js >= 20.0.0
 - Docker & Docker Compose
 
 ### Installation
