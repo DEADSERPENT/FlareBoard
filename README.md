@@ -2,6 +2,12 @@
 
 **The Ultimate Multi-Module Dashboard System**
 
+[![CI](https://github.com/DEADSERPENT/FlareBoard/actions/workflows/ci.yml/badge.svg)](https://github.com/DEADSERPENT/FlareBoard/actions/workflows/ci.yml)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-18.2-blue.svg)](https://reactjs.org/)
+[![Tests](https://img.shields.io/badge/tests-63%20passing-success.svg)](https://github.com/DEADSERPENT/FlareBoard)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 A modular, lightweight, highly customizable dashboard for teams, developers, and product managers. Built with pure engineering principles—no AI, just excellent UX and solid architecture.
 
 ## ✨ Features
@@ -14,6 +20,8 @@ A modular, lightweight, highly customizable dashboard for teams, developers, and
 - 🎯 Kanban project boards with timelines
 - 🔔 Smart notification center
 - ⚙️ Extensive settings and admin panel
+- ⌨️ Command Palette with Cmd/Ctrl+K for power users
+- ✅ Comprehensive test coverage (63 passing tests)
 
 ## 🏗️ Tech Stack
 
@@ -105,12 +113,61 @@ npm run dev:api
 # Type checking
 npm run type-check
 
+# Linting
+npm run lint
+
 # Format code
 npm run format
 
 # Build for production
 npm run build
 ```
+
+## 🧪 Testing
+
+FlareBoard uses **Vitest** and **React Testing Library** for comprehensive testing.
+
+```bash
+# Run tests in watch mode
+npm run test
+
+# Run tests once (CI mode)
+npm run test:run
+
+# Run tests with UI
+npm run test:ui
+
+# Generate coverage report
+npm run test:coverage
+
+# Verify all CI checks locally (lint + type-check + test)
+npm run verify
+```
+
+**Test Coverage:**
+- AuthContext: Authentication flow, localStorage persistence
+- UI Components: Button, Modal, Input with all variants
+- TaskModal: Create/edit modes, validation, async operations
+- CommandPalette: Navigation, search, keyboard shortcuts
+
+**Current Stats:** 63 passing tests across 4 test suites
+
+## 🔄 CI/CD
+
+FlareBoard uses **GitHub Actions** for continuous integration. On every push and pull request:
+
+- ✅ ESLint & Prettier checks
+- ✅ TypeScript type checking
+- ✅ Automated test suite (63 tests)
+- ✅ Build verification
+- ✅ Code coverage reporting
+
+**Before pushing:**
+```bash
+npm run verify
+```
+
+See [`.github/CI_CD.md`](.github/CI_CD.md) for full documentation.
 
 ## 🐳 Docker Commands
 

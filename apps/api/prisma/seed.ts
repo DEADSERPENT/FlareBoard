@@ -309,8 +309,10 @@ async function main() {
   console.log('✅ Notifications created')
 
   // Create User Preferences
-  await prisma.userPreferences.create({
-    data: {
+  await prisma.userPreferences.upsert({
+    where: { userId: adminUser.id },
+    update: {},
+    create: {
       userId: adminUser.id,
       theme: 'dark',
       defaultDashboard: defaultDashboard.id,

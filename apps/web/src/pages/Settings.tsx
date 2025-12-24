@@ -9,8 +9,8 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/contexts/ToastContext'
 
 export const SettingsPage = () => {
-  const { token, user: authUser } = useAuth()
-  const { toast } = useToast()
+  const { token } = useAuth()
+  const toast = useToast()
   const [loading, setLoading] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [preferences, setPreferences] = useState<any>(null)
@@ -61,13 +61,13 @@ export const SettingsPage = () => {
 
       const data = await response.json()
       if (data.success) {
-        toast.success('Profile updated successfully')
+        toast.success('Success', 'Profile updated successfully')
         await fetchProfile()
       } else {
-        toast.error(data.error?.message || 'Failed to update profile')
+        toast.error('Error', data.error?.message || 'Failed to update profile')
       }
     } catch (error) {
-      toast.error('Failed to update profile')
+      toast.error('Error', 'Failed to update profile')
     } finally {
       setLoading(false)
     }
@@ -75,12 +75,12 @@ export const SettingsPage = () => {
 
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
-      toast.error('Passwords do not match')
+      toast.error('Validation Error', 'Passwords do not match')
       return
     }
 
     if (newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters')
+      toast.error('Validation Error', 'Password must be at least 6 characters')
       return
     }
 
@@ -97,16 +97,16 @@ export const SettingsPage = () => {
 
       const data = await response.json()
       if (data.success) {
-        toast.success('Password changed successfully')
+        toast.success('Success', 'Password changed successfully')
         setShowPasswordModal(false)
         setCurrentPassword('')
         setNewPassword('')
         setConfirmPassword('')
       } else {
-        toast.error(data.error?.message || 'Failed to change password')
+        toast.error('Error', data.error?.message || 'Failed to change password')
       }
     } catch (error) {
-      toast.error('Failed to change password')
+      toast.error('Error', 'Failed to change password')
     } finally {
       setLoading(false)
     }
@@ -126,10 +126,10 @@ export const SettingsPage = () => {
       const data = await response.json()
       if (data.success) {
         setPreferences(data.data)
-        toast.success('Preferences updated')
+        toast.success('Success', 'Preferences updated')
       }
     } catch (error) {
-      toast.error('Failed to update preferences')
+      toast.error('Error', 'Failed to update preferences')
     }
   }
 

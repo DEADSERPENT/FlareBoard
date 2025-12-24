@@ -3,6 +3,8 @@ import { Calendar, AlertCircle } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Input } from '../ui/Input'
 import { Modal } from '../ui/Modal'
+import { TaskComments } from './TaskComments'
+import { TaskAttachments } from './TaskAttachments'
 
 interface Task {
   id?: string
@@ -224,6 +226,18 @@ export function TaskModal({
           </Button>
         </div>
       </form>
+
+      {/* Attachments and Comments Section - Only show for existing tasks */}
+      {task?.id && (
+        <>
+          <div className="mt-6 pt-6 border-t border-neutral-200">
+            <TaskAttachments taskId={task.id} />
+          </div>
+          <div className="mt-6 pt-6 border-t border-neutral-200">
+            <TaskComments taskId={task.id} />
+          </div>
+        </>
+      )}
     </Modal>
   )
 }
