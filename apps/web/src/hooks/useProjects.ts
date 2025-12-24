@@ -28,41 +28,29 @@ export const useProjects = () => {
   }
 
   const createProject = async (data: Partial<Project>) => {
-    try {
-      const response = await api.createProject(data)
-      if (response.success && response.data) {
-        setProjects(prev => [...prev, response.data!])
-        return response.data
-      }
-      throw new Error(response.error?.message || 'Failed to create project')
-    } catch (err) {
-      throw err
+    const response = await api.createProject(data)
+    if (response.success && response.data) {
+      setProjects(prev => [...prev, response.data!])
+      return response.data
     }
+    throw new Error(response.error?.message || 'Failed to create project')
   }
 
   const updateProject = async (id: string, data: Partial<Project>) => {
-    try {
-      const response = await api.updateProject(id, data)
-      if (response.success && response.data) {
-        setProjects(prev => prev.map(p => (p.id === id ? response.data! : p)))
-        return response.data
-      }
-      throw new Error(response.error?.message || 'Failed to update project')
-    } catch (err) {
-      throw err
+    const response = await api.updateProject(id, data)
+    if (response.success && response.data) {
+      setProjects(prev => prev.map(p => (p.id === id ? response.data! : p)))
+      return response.data
     }
+    throw new Error(response.error?.message || 'Failed to update project')
   }
 
   const deleteProject = async (id: string) => {
-    try {
-      const response = await api.deleteProject(id)
-      if (response.success) {
-        setProjects(prev => prev.filter(p => p.id !== id))
-      } else {
-        throw new Error(response.error?.message || 'Failed to delete project')
-      }
-    } catch (err) {
-      throw err
+    const response = await api.deleteProject(id)
+    if (response.success) {
+      setProjects(prev => prev.filter(p => p.id !== id))
+    } else {
+      throw new Error(response.error?.message || 'Failed to delete project')
     }
   }
 

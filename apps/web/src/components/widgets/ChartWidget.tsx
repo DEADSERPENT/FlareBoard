@@ -13,7 +13,7 @@ interface ChartWidgetProps {
   type?: 'bar' | 'line'
 }
 
-export function ChartWidget({ title, data, type: _type = 'bar' }: ChartWidgetProps) {
+export function ChartWidget({ title, data }: ChartWidgetProps) {
   const maxValue = Math.max(...data.map((d) => d.value))
 
   const getDefaultColor = (index: number) => {

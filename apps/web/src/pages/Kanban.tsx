@@ -119,7 +119,7 @@ export function KanbanPage() {
     e.dataTransfer.effectAllowed = 'move'
   }
 
-  const handleDragEnd = (_e: React.DragEvent) => {
+  const handleDragEnd = () => {
     setDraggedTaskId(null)
   }
 
