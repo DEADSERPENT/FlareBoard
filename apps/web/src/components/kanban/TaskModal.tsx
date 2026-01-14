@@ -5,28 +5,19 @@ import { Input } from '../ui/Input'
 import { Modal } from '../ui/Modal'
 import { TaskComments } from './TaskComments'
 import { TaskAttachments } from './TaskAttachments'
+import { SubtaskList } from './SubtaskList'
+import type { Task, Project } from '@flareboard/types'
 
-interface Task {
+// Local form data type that allows string values for select fields
+interface TaskFormData {
   id?: string
   title: string
   description?: string
   status: string
   priority: string
   projectId: string
-  position?: number
   assignedTo?: string | null
   dueDate?: string | Date | null
-  assignee?: {
-    id: string
-    fullName: string
-    email: string
-    avatarUrl?: string | null
-  } | null
-}
-
-interface Project {
-  id: string
-  name: string
 }
 
 interface TaskModalProps {
@@ -48,7 +39,7 @@ export function TaskModal({
   defaultStatus,
   defaultProjectId,
 }: TaskModalProps) {
-  const [formData, setFormData] = useState<Partial<Task>>({
+  const [formData, setFormData] = useState<TaskFormData>({
     title: '',
     description: '',
     status: defaultStatus || 'Todo',
@@ -63,7 +54,13 @@ export function TaskModal({
   useEffect(() => {
     if (task) {
       setFormData({
-        ...task,
+        id: task.id,
+        title: task.title,
+        description: task.description,
+        status: task.status,
+        priority: task.priority,
+        projectId: task.projectId,
+        assignedTo: task.assignedTo,
         dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : null,
       })
     } else {
@@ -91,7 +88,8 @@ export function TaskModal({
     setLoading(true)
 
     try {
-      await onSave(formData)
+      // Cast to Task type for saving
+      await onSave(formData as any)
       onClose()
     } catch (err: any) {
       setError(err.message || 'Failed to save task')
@@ -227,9 +225,12 @@ export function TaskModal({
         </div>
       </form>
 
-      {/* Attachments and Comments Section - Only show for existing tasks */}
-      {task?.id && (
+      {/* Subtasks, Attachments and Comments Section - Only show for existing tasks */}
+      {task?.id && task.createdAt && task.updatedAt && (
         <>
+          <div className="mt-6 pt-6 border-t border-neutral-200">
+            <SubtaskList parentTask={task as Task} />
+          </div>
           <div className="mt-6 pt-6 border-t border-neutral-200">
             <TaskAttachments taskId={task.id} />
           </div>

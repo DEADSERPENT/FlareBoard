@@ -290,17 +290,74 @@ async function main() {
     data: [
       {
         userId: adminUser.id,
-        content: 'New task assigned: Implement drag-and-drop',
+        type: 'task',
+        title: 'New Task Assigned',
+        message: 'You have been assigned to "Implement drag-and-drop"',
+        icon: '✅',
+        actionUrl: '/kanban',
+        actionText: 'View Task',
+        priority: 'high',
+        category: 'task',
+        isRead: false,
+      },
+      {
+        userId: adminUser.id,
+        type: 'mention',
+        title: 'You were mentioned',
+        message: 'Alice Johnson mentioned you in a comment on "Design new widget system"',
+        icon: '💬',
+        actionUrl: '/kanban',
+        actionText: 'View Comment',
+        priority: 'normal',
+        category: 'mention',
+        isRead: false,
+      },
+      {
+        userId: adminUser.id,
+        type: 'project',
+        title: 'Project Updated',
+        message: 'FlareBoard Dashboard v2.0 status changed to Active',
+        icon: '📁',
+        actionUrl: '/projects',
+        actionText: 'View Project',
+        priority: 'normal',
+        category: 'project',
+        isRead: false,
+      },
+      {
+        userId: adminUser.id,
+        type: 'warning',
+        title: 'Task Due Soon',
+        message: 'Task "Write unit tests" is due in 2 hours',
+        icon: '⏰',
+        actionUrl: '/kanban',
+        actionText: 'View Task',
+        priority: 'urgent',
+        category: 'task',
         isRead: false,
       },
       {
         userId: manager1.id,
-        content: 'Project milestone reached: Nebula Dashboard v2.0',
+        type: 'success',
+        title: 'Project Milestone',
+        message: 'Project milestone reached: FlareBoard Dashboard v2.0',
+        icon: '🎉',
+        actionUrl: '/projects',
+        actionText: 'View Details',
+        priority: 'high',
+        category: 'project',
         isRead: false,
       },
       {
         userId: viewer1.id,
-        content: 'You have been added to the team!',
+        type: 'info',
+        title: 'Welcome to FlareBoard!',
+        message: 'You have been added to the team! Get started by exploring your dashboard.',
+        icon: '👋',
+        actionUrl: '/dashboard',
+        actionText: 'Get Started',
+        priority: 'normal',
+        category: 'general',
         isRead: true,
       },
     ],
@@ -336,7 +393,7 @@ async function main() {
   console.log(`   - Dashboards: 1`)
   console.log(`   - Widgets: 3`)
   console.log(`   - Activity Logs: 3`)
-  console.log(`   - Notifications: 3`)
+  console.log(`   - Notifications: 6 (4 unread for admin user)`)
   console.log('\n🔑 Login with: admin@flareboard.com / password123')
 }
 

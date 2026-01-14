@@ -1,66 +1,100 @@
-import { useState, useEffect } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
-import type { Project } from '@nebula/types'
+import type { Project } from '@flareboard/types'
 
-export const useProjects = () => {
-  const [projects, setProjects] = useState<Project[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+// Query keys
+export const projectsKeys = {
+  all: ['projects'] as const,
+  lists: () => [...projectsKeys.all, 'list'] as const,
+  details: () => [...projectsKeys.all, 'detail'] as const,
+  detail: (id: string) => [...projectsKeys.details(), id] as const,
+}
 
-  useEffect(() => {
-    loadProjects()
-  }, [])
-
-  const loadProjects = async () => {
-    try {
-      setLoading(true)
+// Projects hooks
+export function useProjects() {
+  return useQuery({
+    queryKey: projectsKeys.lists(),
+    queryFn: async () => {
       const response = await api.getProjects()
       if (response.success && response.data) {
-        setProjects(response.data)
-      } else {
-        setError(response.error?.message || 'Failed to load projects')
+        return response.data
       }
-    } catch (err) {
-      setError('Failed to connect to API')
-    } finally {
-      setLoading(false)
-    }
-  }
+      throw new Error('Failed to fetch projects')
+    },
+  })
+}
 
-  const createProject = async (data: Partial<Project>) => {
-    const response = await api.createProject(data)
-    if (response.success && response.data) {
-      setProjects(prev => [...prev, response.data!])
+export function useProject(id: string) {
+  return useQuery({
+    queryKey: projectsKeys.detail(id),
+    queryFn: async () => {
+      const response = await api.getProject(id)
+      if (response.success && response.data) {
+        return response.data
+      }
+      throw new Error('Failed to fetch project')
+    },
+    enabled: !!id,
+  })
+}
+
+// Project mutations
+export function useCreateProject() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: Partial<Project>) => {
+      const response = await api.createProject(data)
+      if (!response.success || !response.data) {
+        throw new Error('Failed to create project')
+      }
       return response.data
-    }
-    throw new Error(response.error?.message || 'Failed to create project')
-  }
+    },
+    onSuccess: (newProject) => {
+      queryClient.invalidateQueries({ queryKey: projectsKeys.lists() })
+      queryClient.setQueryData<Project[]>(projectsKeys.lists(), (old) => {
+        if (!old) return [newProject]
+        return [...old, newProject]
+      })
+    },
+  })
+}
 
-  const updateProject = async (id: string, data: Partial<Project>) => {
-    const response = await api.updateProject(id, data)
-    if (response.success && response.data) {
-      setProjects(prev => prev.map(p => (p.id === id ? response.data! : p)))
+export function useUpdateProject() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<Project> }) => {
+      const response = await api.updateProject(id, data)
+      if (!response.success || !response.data) {
+        throw new Error('Failed to update project')
+      }
       return response.data
-    }
-    throw new Error(response.error?.message || 'Failed to update project')
-  }
+    },
+    onSuccess: (updatedProject) => {
+      queryClient.setQueryData<Project>(
+        projectsKeys.detail(updatedProject.id),
+        updatedProject
+      )
+      queryClient.invalidateQueries({ queryKey: projectsKeys.lists() })
+    },
+  })
+}
 
-  const deleteProject = async (id: string) => {
-    const response = await api.deleteProject(id)
-    if (response.success) {
-      setProjects(prev => prev.filter(p => p.id !== id))
-    } else {
-      throw new Error(response.error?.message || 'Failed to delete project')
-    }
-  }
+export function useDeleteProject() {
+  const queryClient = useQueryClient()
 
-  return {
-    projects,
-    loading,
-    error,
-    createProject,
-    updateProject,
-    deleteProject,
-    refresh: loadProjects,
-  }
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await api.deleteProject(id)
+      if (!response.success) {
+        throw new Error('Failed to delete project')
+      }
+      return id
+    },
+    onSuccess: (deletedId) => {
+      queryClient.removeQueries({ queryKey: projectsKeys.detail(deletedId) })
+      queryClient.invalidateQueries({ queryKey: projectsKeys.lists() })
+    },
+  })
 }

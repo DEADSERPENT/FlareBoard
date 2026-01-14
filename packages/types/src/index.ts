@@ -65,9 +65,18 @@ export interface Task {
   description?: string
   status: TaskStatus
   priority: TaskPriority
-  assignedTo?: string
-  dueDate?: Date
+  assignedTo?: string | null
+  dueDate?: Date | null
   position: number // for Kanban column ordering
+  parentId?: string | null // for subtasks
+  deletedAt?: Date | null // for soft deletes
+  subtasks?: Task[] // nested subtasks
+  assignee?: {
+    id: string
+    fullName: string
+    email: string
+    avatarUrl?: string | null
+  } | null
   createdAt: Date
   updatedAt: Date
 }
@@ -203,16 +212,31 @@ export interface ActivityLog {
   timestamp: Date
 }
 
+export type NotificationType = 'info' | 'success' | 'warning' | 'error' | 'mention' | 'task' | 'project'
+export type NotificationPriority = 'low' | 'normal' | 'high' | 'urgent'
+export type NotificationCategory = 'general' | 'task' | 'project' | 'mention' | 'system'
+
 export interface Notification {
   id: string
   userId: string
-  type: string
-  title?: string
-  message?: string
-  content: string
+  type: NotificationType
+  title: string
+  message: string
+  icon?: string | null
+  actionUrl?: string | null
+  actionText?: string | null
+  priority: NotificationPriority
+  category: NotificationCategory
+  metadata?: Record<string, any> | null
   isRead: boolean
-  actionUrl?: string
+  readAt?: Date | null
   createdAt: Date
+  user?: {
+    id: string
+    fullName: string
+    email: string
+    avatarUrl?: string | null
+  }
 }
 
 // ============================================

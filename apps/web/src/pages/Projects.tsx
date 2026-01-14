@@ -21,8 +21,8 @@ interface Project {
 }
 
 export const ProjectsPage = () => {
-  const { projects, loading: projectsLoading, refresh } = useProjects()
-  const { tasks } = useTasks()
+  const { data: projects = [], isLoading: projectsLoading, refetch: refresh } = useProjects()
+  const { data: tasks = [] } = useTasks()
   const { token } = useAuth()
   const toast = useToast()
 

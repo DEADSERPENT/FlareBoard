@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express'
 import { AuthRequest } from '../middlewares/auth.js'
-import { prisma } from '../lib/prisma.js'
+import { notificationService } from '../services/notification.service.js'
 import type { ApiResponse, Notification } from '@flareboard/types'
 import { AppError } from '../middlewares/errorHandler.js'
 
@@ -11,20 +11,21 @@ class NotificationsController {
         throw new AppError(401, 'UNAUTHORIZED', 'Authentication required')
       }
 
-      const { unreadOnly } = req.query
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50
+      const offset = req.query.offset ? parseInt(req.query.offset as string) : 0
+      const unreadOnly = req.query.unreadOnly === 'true'
+      const category = req.query.category as any
 
-      const notifications = await prisma.notification.findMany({
-        where: {
-          userId: req.user.userId,
-          ...(unreadOnly === 'true' && { isRead: false }),
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 50, // Limit to recent 50 notifications
+      const result = await notificationService.getNotifications(req.user.userId, {
+        limit,
+        offset,
+        unreadOnly,
+        category,
       })
 
-      const response: ApiResponse<Notification[]> = {
+      const response: ApiResponse<typeof result> = {
         success: true,
-        data: notifications as Notification[],
+        data: result,
       }
       res.json(response)
     } catch (error) {
@@ -62,26 +63,11 @@ class NotificationsController {
       }
 
       const { id } = req.params
+      const notification = await notificationService.markAsRead(id, req.user.userId)
 
-      const notification = await prisma.notification.findUnique({
-        where: { id },
-      })
-
-      if (!notification) {
-        throw new AppError(404, 'NOT_FOUND', 'Notification not found')
-      }
-
-      if (notification.userId !== req.user.userId) {
-        throw new AppError(403, 'FORBIDDEN', 'You do not have permission to update this notification')
-      }
-
-      await prisma.notification.update({
-        where: { id },
-        data: { isRead: true },
-      })
-
-      const response: ApiResponse = {
+      const response: ApiResponse<Notification> = {
         success: true,
+        data: notification,
       }
       res.json(response)
     } catch (error) {
@@ -95,16 +81,11 @@ class NotificationsController {
         throw new AppError(401, 'UNAUTHORIZED', 'Authentication required')
       }
 
-      await prisma.notification.updateMany({
-        where: {
-          userId: req.user.userId,
-          isRead: false,
-        },
-        data: { isRead: true },
-      })
+      const result = await notificationService.markAllAsRead(req.user.userId)
 
-      const response: ApiResponse = {
+      const response: ApiResponse<{ count: number }> = {
         success: true,
+        data: result,
       }
       res.json(response)
     } catch (error) {

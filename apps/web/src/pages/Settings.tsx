@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
 import { Modal } from '@/components/ui/Modal'
-import { User, Bell, Shield, Palette, Key } from 'lucide-react'
+import { User, Bell, Shield, Palette, Key, Trash2 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/contexts/ToastContext'
+import { TrashModal } from '@/components/TrashModal'
 
 export const SettingsPage = () => {
   const { token } = useAuth()
@@ -15,6 +16,7 @@ export const SettingsPage = () => {
   const [user, setUser] = useState<any>(null)
   const [preferences, setPreferences] = useState<any>(null)
   const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [showTrashModal, setShowTrashModal] = useState(false)
 
   // Profile form
   const [fullName, setFullName] = useState('')
@@ -334,6 +336,35 @@ export const SettingsPage = () => {
         </div>
       </Card>
 
+      {/* Data Management */}
+      <Card>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+            <Trash2 className="w-5 h-5 text-orange-600" />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold text-neutral-900">Data Management</h2>
+            <p className="text-sm text-neutral-600">Manage your deleted items</p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              onClick={() => setShowTrashModal(true)}
+            >
+              <Trash2 className="w-5 h-5 mr-2" />
+              View Trash
+            </Button>
+            <p className="text-xs text-neutral-500 mt-2 ml-1">
+              Restore or permanently delete items from trash
+            </p>
+          </div>
+        </div>
+      </Card>
+
       {/* Change Password Modal */}
       <Modal
         isOpen={showPasswordModal}
@@ -372,6 +403,12 @@ export const SettingsPage = () => {
           </div>
         </div>
       </Modal>
+
+      {/* Trash Modal */}
+      <TrashModal
+        isOpen={showTrashModal}
+        onClose={() => setShowTrashModal(false)}
+      />
     </div>
   )
 }

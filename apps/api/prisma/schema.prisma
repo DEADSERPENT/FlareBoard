@@ -66,19 +66,21 @@ model UserPreferences {
 // ============================================
 
 model Project {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   name        String
   description String?
   ownerId     String
-  status      String   @default("Active")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  status      String    @default("Active")
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   owner User   @relation(fields: [ownerId], references: [id])
   tasks Task[]
 
   @@index([ownerId])
   @@index([status])
+  @@index([deletedAt])
   @@map("projects")
 }
 
@@ -92,17 +94,23 @@ model Task {
   assignedTo  String?
   dueDate     DateTime?
   position    Int       @default(0)
+  parentId    String?
+  deletedAt   DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
   project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
   assignee    User?        @relation(fields: [assignedTo], references: [id])
+  parent      Task?        @relation("SubTasks", fields: [parentId], references: [id], onDelete: Cascade)
+  subtasks    Task[]       @relation("SubTasks")
   comments    Comment[]
   attachments Attachment[]
 
   @@index([projectId])
   @@index([assignedTo])
   @@index([status])
+  @@index([parentId])
+  @@index([deletedAt])
   @@map("tasks")
 }
 
@@ -197,19 +205,26 @@ model ActivityLog {
 }
 
 model Notification {
-  id        String   @id @default(cuid())
-  userId    String
-  type      String   @default("info")
-  title     String?
-  message   String?
-  content   String
-  isRead    Boolean  @default(false)
-  actionUrl String?
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  userId     String
+  type       String   @default("info") // info, success, warning, error, mention, task, project
+  title      String
+  message    String
+  icon       String?  // Icon name or emoji
+  actionUrl  String?  // Deep link to relevant page
+  actionText String?  // CTA button text
+  priority   String   @default("normal") // low, normal, high, urgent
+  category   String   @default("general") // general, task, project, mention, system
+  metadata   Json?    // Additional context (task details, project info, etc.)
+  isRead     Boolean  @default(false)
+  readAt     DateTime?
+  createdAt  DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
-  @@index([isRead])
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@index([category])
+  @@index([priority])
   @@map("notifications")
 }

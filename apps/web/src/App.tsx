@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { SocketProvider } from '@/contexts/SocketContext'
 import { ToastProvider } from '@/contexts/ToastContext'
@@ -14,6 +15,17 @@ import { KanbanPage } from '@/pages/Kanban'
 import { ActivityPage } from '@/pages/Activity'
 import { Login } from '@/pages/Login'
 import { Register } from '@/pages/Register'
+
+// Create a QueryClient instance
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+})
 
 function AppContent() {
   const commandPalette = useCommandPalette()
@@ -51,13 +63,15 @@ function AppContent() {
 function App() {
   return (
     <Router>
-      <AuthProvider>
-        <ToastProvider>
-          <SocketProvider>
-            <AppContent />
-          </SocketProvider>
-        </ToastProvider>
-      </AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <ToastProvider>
+            <SocketProvider>
+              <AppContent />
+            </SocketProvider>
+          </ToastProvider>
+        </AuthProvider>
+      </QueryClientProvider>
     </Router>
   )
 }

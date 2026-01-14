@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Search, Menu, LogOut, User, Settings, FolderKanban, CheckSquare } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
-import { NotificationPanel } from '../notifications/NotificationPanel'
+import { NotificationCenter } from '../notifications/NotificationCenter'
 
 export const TopBar = () => {
   const { user, logout, token } = useAuth()
@@ -161,7 +161,7 @@ export const TopBar = () => {
       </div>
 
       <div className="flex items-center gap-4">
-        <NotificationPanel />
+        <NotificationCenter />
 
         <div className="relative pl-4 border-l border-neutral-200">
           <button

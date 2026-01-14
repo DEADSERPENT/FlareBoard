@@ -16,9 +16,29 @@ vi.mock('./TaskAttachments', () => ({
   ),
 }))
 
+vi.mock('./SubtaskList', () => ({
+  SubtaskList: ({ parentTask }: { parentTask: any }) => (
+    <div data-testid="subtask-list">Subtasks for {parentTask.id}</div>
+  ),
+}))
+
 const mockProjects = [
-  { id: 'proj-1', name: 'Project Alpha' },
-  { id: 'proj-2', name: 'Project Beta' },
+  {
+    id: 'proj-1',
+    name: 'Project Alpha',
+    ownerId: 'user-1',
+    status: 'Active' as const,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'proj-2',
+    name: 'Project Beta',
+    ownerId: 'user-1',
+    status: 'Active' as const,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
 ]
 
 describe('TaskModal', () => {
@@ -264,12 +284,14 @@ describe('TaskModal', () => {
       id: 'task-1',
       title: 'Existing Task',
       description: 'Existing description',
-      status: 'In Progress',
-      priority: 'High',
+      status: 'InProgress' as const,
+      priority: 'High' as const,
       projectId: 'proj-2',
       position: 1,
       assignedTo: null,
-      dueDate: '2024-12-31',
+      dueDate: new Date('2024-12-31'),
+      createdAt: new Date(),
+      updatedAt: new Date(),
     }
 
     it('should render with "Edit Task" title when task provided', () => {

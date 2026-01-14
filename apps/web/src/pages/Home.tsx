@@ -16,13 +16,13 @@ import {
 import { useMemo } from 'react'
 
 export const HomePage = () => {
-  const { projects, loading: projectsLoading } = useProjects()
-  const { tasks, loading: tasksLoading } = useTasks()
+  const { data: projects = [], isLoading: projectsLoading } = useProjects()
+  const { data: tasks = [], isLoading: tasksLoading } = useTasks()
 
   const stats = useMemo(() => {
-    const activeProjects = projects.filter(p => p.status === 'Active').length
-    const activeTasks = tasks.filter(t => t.status !== 'Done').length
-    const completedTasks = tasks.filter(t => t.status === 'Done').length
+    const activeProjects = projects.filter((p: any) => p.status === 'Active').length
+    const activeTasks = tasks.filter((t: any) => t.status !== 'Done').length
+    const completedTasks = tasks.filter((t: any) => t.status === 'Done').length
     const totalTasks = tasks.length
     const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
 
@@ -36,7 +36,7 @@ export const HomePage = () => {
 
   const recentTasks = useMemo(() => {
     return [...tasks]
-      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+      .sort((a: any, b: any) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
       .slice(0, 5)
   }, [tasks])
 
@@ -229,9 +229,9 @@ export const HomePage = () => {
             </div>
           ) : (
             <div className="space-y-3">
-              {projects.slice(0, 5).map(project => {
-                const projectTasks = tasks.filter(t => t.projectId === project.id)
-                const completed = projectTasks.filter(t => t.status === 'Done').length
+              {projects.slice(0, 5).map((project: any) => {
+                const projectTasks = tasks.filter((t: any) => t.projectId === project.id)
+                const completed = projectTasks.filter((t: any) => t.status === 'Done').length
                 const total = projectTasks.length
                 const progress = total > 0 ? (completed / total) * 100 : 0
 

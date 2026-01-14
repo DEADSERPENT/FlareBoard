@@ -1,27 +1,27 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import {
+  DndContext,
+  DragOverlay,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  DragStartEvent,
+  DragEndEvent,
+  DragOverEvent,
+  closestCorners,
+} from '@dnd-kit/core'
 import { Plus, Filter } from 'lucide-react'
 import { KanbanColumn } from '../components/kanban/KanbanColumn'
+import { TaskCard } from '../components/kanban/TaskCard'
 import { TaskModal } from '../components/kanban/TaskModal'
 import { Button } from '../components/ui/Button'
-import { useAuth } from '../contexts/AuthContext'
-import type { Project } from '@flareboard/types'
-
-interface Task {
-  id: string
-  title: string
-  description?: string
-  status: string
-  priority: string
-  position: number
-  projectId: string
-  dueDate?: Date | string | null
-  assignee?: {
-    id: string
-    fullName: string
-    email: string
-    avatarUrl?: string | null
-  } | null
-}
+import {
+  useProjects,
+  useTasks,
+  useCreateTask,
+  useUpdateTaskOptimistic,
+} from '../hooks/useTasks'
+import type { Task } from '@flareboard/types'
 
 const COLUMNS = [
   { title: 'To Do', status: 'Todo', color: 'blue' },
@@ -30,144 +30,110 @@ const COLUMNS = [
 ]
 
 export function KanbanPage() {
-  const { token } = useAuth()
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [projects, setProjects] = useState<Project[]>([])
   const [selectedProject, setSelectedProject] = useState<string>('all')
-  const [loading, setLoading] = useState(true)
-  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null)
+  const [activeTask, setActiveTask] = useState<Task | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [defaultStatus, setDefaultStatus] = useState<string>('Todo')
 
-  useEffect(() => {
-    fetchProjects()
-    fetchTasks()
-  }, [selectedProject])
+  // Fetch data using TanStack Query hooks
+  const { data: projects = [], isLoading: projectsLoading } = useProjects()
+  const projectId = selectedProject === 'all' ? undefined : selectedProject
+  const { data: tasks = [], isLoading: tasksLoading, refetch: refetchTasks } = useTasks(projectId)
 
-  // Listen for real-time task updates
+  // Mutations
+  const createTaskMutation = useCreateTask()
+  const updateTaskMutation = useUpdateTaskOptimistic()
+
+  // DnD Sensors - require 5px movement before dragging starts
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    })
+  )
+
+  // Auto-select first project on load
   useEffect(() => {
-    const handleTaskUpdate = (event: CustomEvent) => {
-      const updatedTask = event.detail
-      setTasks((prevTasks) => {
-        const taskIndex = prevTasks.findIndex((t) => t.id === updatedTask.id)
-        if (taskIndex >= 0) {
-          // Update existing task
-          const newTasks = [...prevTasks]
-          newTasks[taskIndex] = { ...newTasks[taskIndex], ...updatedTask }
-          return newTasks
-        } else {
-          // Add new task if it matches the current project filter
-          if (selectedProject === 'all' || updatedTask.projectId === selectedProject) {
-            return [...prevTasks, updatedTask]
-          }
-          return prevTasks
-        }
-      })
+    if (projects.length > 0 && selectedProject === 'all') {
+      setSelectedProject(projects[0].id)
+    }
+  }, [projects, selectedProject])
+
+  // Listen for real-time task updates from WebSocket
+  useEffect(() => {
+    const handleTaskUpdate = () => {
+      refetchTasks()
     }
 
     window.addEventListener('task:updated', handleTaskUpdate as EventListener)
     return () => {
       window.removeEventListener('task:updated', handleTaskUpdate as EventListener)
     }
-  }, [selectedProject])
+  }, [refetchTasks])
 
-  const fetchProjects = async () => {
-    try {
-      const response = await fetch('http://localhost:3000/api/projects', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      const data = await response.json()
-      if (data.success) {
-        setProjects(data.data)
-        if (data.data.length > 0 && selectedProject === 'all') {
-          setSelectedProject(data.data[0].id)
+  // Drag Handlers
+  const handleDragStart = (event: DragStartEvent) => {
+    if (event.active.data.current?.type === 'Task') {
+      setActiveTask(event.active.data.current.task)
+    }
+  }
+
+  const handleDragOver = (event: DragOverEvent) => {
+    // Optional: You can add visual feedback here if needed
+  }
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+    setActiveTask(null)
+
+    if (!over) return
+
+    const activeId = active.id as string
+    const overId = over.id as string
+
+    const activeTaskData = tasks.find((t) => t.id === activeId)
+    if (!activeTaskData) return
+
+    // Case 1: Dropped on a Column (status zone)
+    if (over.data.current?.type === 'Column') {
+      const newStatus = over.id as string
+      if (activeTaskData.status !== newStatus) {
+        await updateTaskMutation.mutateAsync({
+          id: activeId,
+          data: { status: newStatus as any },
+        })
+      }
+      return
+    }
+
+    // Case 2: Dropped on another Task
+    if (over.data.current?.type === 'Task') {
+      const overTask = tasks.find((t) => t.id === overId)
+      if (!overTask) return
+
+      const isSameColumn = activeTaskData.status === overTask.status
+
+      if (isSameColumn) {
+        // Reordering within same column
+        if (activeId !== overId) {
+          await updateTaskMutation.mutateAsync({
+            id: activeId,
+            data: { position: overTask.position },
+          })
         }
+      } else {
+        // Moving to different column
+        await updateTaskMutation.mutateAsync({
+          id: activeId,
+          data: {
+            status: overTask.status as any,
+            position: overTask.position,
+          },
+        })
       }
-    } catch (error) {
-      console.error('Failed to fetch projects:', error)
     }
-  }
-
-  const fetchTasks = async () => {
-    try {
-      const url =
-        selectedProject === 'all'
-          ? 'http://localhost:3000/api/tasks'
-          : `http://localhost:3000/api/tasks?projectId=${selectedProject}`
-
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      const data = await response.json()
-      if (data.success) {
-        setTasks(data.data)
-      }
-    } catch (error) {
-      console.error('Failed to fetch tasks:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleDragStart = (e: React.DragEvent, taskId: string) => {
-    setDraggedTaskId(taskId)
-    e.dataTransfer.effectAllowed = 'move'
-  }
-
-  const handleDragEnd = () => {
-    setDraggedTaskId(null)
-  }
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
-  }
-
-  const handleDrop = async (e: React.DragEvent, newStatus: string) => {
-    e.preventDefault()
-
-    if (!draggedTaskId) return
-
-    const task = tasks.find((t) => t.id === draggedTaskId)
-    if (!task || task.status === newStatus) return
-
-    const oldStatus = task.status
-
-    // Optimistic update
-    setTasks((prevTasks) =>
-      prevTasks.map((t) => (t.id === draggedTaskId ? { ...t, status: newStatus } : t))
-    )
-
-    try {
-      const response = await fetch(`http://localhost:3000/api/tasks/${draggedTaskId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status: newStatus }),
-      })
-
-      if (!response.ok) {
-        // Revert on failure
-        setTasks((prevTasks) =>
-          prevTasks.map((t) => (t.id === draggedTaskId ? { ...t, status: oldStatus } : t))
-        )
-      }
-    } catch (error) {
-      console.error('Failed to update task:', error)
-      // Revert on error
-      setTasks((prevTasks) =>
-        prevTasks.map((t) => (t.id === draggedTaskId ? { ...t, status: oldStatus } : t))
-      )
-    }
-
-    setDraggedTaskId(null)
   }
 
   const handleAddTask = (status: string) => {
@@ -184,51 +150,29 @@ export function KanbanPage() {
   const handleSaveTask = async (taskData: Partial<Task>) => {
     if (editingTask) {
       // Update existing task
-      const response = await fetch(`http://localhost:3000/api/tasks/${editingTask.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(taskData),
+      await updateTaskMutation.mutateAsync({
+        id: editingTask.id,
+        data: taskData as any,
       })
-
-      if (!response.ok) {
-        throw new Error('Failed to update task')
-      }
-
-      const data = await response.json()
-      setTasks((prevTasks) =>
-        prevTasks.map((t) => (t.id === editingTask.id ? { ...t, ...data.data } : t))
-      )
     } else {
       // Create new task
-      const response = await fetch('http://localhost:3000/api/tasks', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(taskData),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to create task')
-      }
-
-      const data = await response.json()
-      setTasks((prevTasks) => [...prevTasks, data.data])
+      await createTaskMutation.mutateAsync(taskData as any)
     }
   }
 
-  const getTasksByStatus = (status: string) => {
-    return tasks.filter((task) => task.status === status).sort((a, b) => a.position - b.position)
-  }
+  const getTasksByStatus = useMemo(
+    () => (status: string) => {
+      return tasks.filter((task) => task.status === status).sort((a, b) => a.position - b.position)
+    },
+    [tasks]
+  )
+
+  const loading = projectsLoading || tasksLoading
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-neutral-600">Loading tasks...</div>
+        <div className="text-neutral-600">Loading...</div>
       </div>
     )
   }
@@ -265,23 +209,41 @@ export function KanbanPage() {
         </div>
       </div>
 
-      <div className="flex-1 grid grid-cols-3 gap-6 overflow-hidden">
-        {COLUMNS.map((column) => (
-          <KanbanColumn
-            key={column.status}
-            title={column.title}
-            status={column.status}
-            tasks={getTasksByStatus(column.status)}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-            onAddTask={handleAddTask}
-            onTaskClick={handleTaskClick}
-            color={column.color}
-          />
-        ))}
-      </div>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="flex-1 grid grid-cols-3 gap-6 overflow-hidden">
+          {COLUMNS.map((column) => (
+            <KanbanColumn
+              key={column.status}
+              title={column.title}
+              status={column.status}
+              tasks={getTasksByStatus(column.status)}
+              onAddTask={handleAddTask}
+              onTaskClick={handleTaskClick}
+              color={column.color}
+            />
+          ))}
+        </div>
+
+        {/* Ghost Overlay - The card that follows your cursor */}
+        <DragOverlay>
+          {activeTask ? (
+            <div className="rotate-2 cursor-grabbing opacity-90 shadow-2xl">
+              <TaskCard
+                task={activeTask}
+                onClick={() => {}}
+                onDragStart={() => {}}
+                onDragEnd={() => {}}
+              />
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
 
       <TaskModal
         isOpen={isModalOpen}

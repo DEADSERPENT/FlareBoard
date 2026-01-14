@@ -1,22 +1,6 @@
 import { Calendar, User, AlertCircle, CheckCircle2, Clock } from 'lucide-react'
 import { Badge } from '../ui/Badge'
-
-interface Task {
-  id: string
-  title: string
-  description?: string
-  status: string
-  priority: string
-  position: number
-  projectId: string
-  dueDate?: Date | string | null
-  assignee?: {
-    id: string
-    fullName: string
-    email: string
-    avatarUrl?: string | null
-  } | null
-}
+import type { Task } from '@flareboard/types'
 
 interface TaskCardProps {
   task: Task

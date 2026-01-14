@@ -1,32 +1,14 @@
+import { useDroppable } from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { Plus } from 'lucide-react'
-import { TaskCard } from './TaskCard'
+import { SortableTaskCard } from './SortableTaskCard'
 import { Button } from '../ui/Button'
-
-interface Task {
-  id: string
-  title: string
-  description?: string
-  status: string
-  priority: string
-  position: number
-  projectId: string
-  dueDate?: Date | string | null
-  assignee?: {
-    id: string
-    fullName: string
-    email: string
-    avatarUrl?: string | null
-  } | null
-}
+import type { Task } from '@flareboard/types'
 
 interface KanbanColumnProps {
   title: string
   status: string
   tasks: Task[]
-  onDragOver: (e: React.DragEvent) => void
-  onDrop: (e: React.DragEvent, status: string) => void
-  onDragStart: (e: React.DragEvent, taskId: string) => void
-  onDragEnd: (e: React.DragEvent) => void
   onAddTask?: (status: string) => void
   onTaskClick?: (task: Task) => void
   color: string
@@ -36,14 +18,18 @@ export function KanbanColumn({
   title,
   status,
   tasks,
-  onDragOver,
-  onDrop,
-  onDragStart,
-  onDragEnd,
   onAddTask,
   onTaskClick,
   color,
 }: KanbanColumnProps) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: status,
+    data: {
+      type: 'Column',
+      status,
+    },
+  })
+
   const getColorClasses = (color: string) => {
     switch (color) {
       case 'blue':
@@ -101,25 +87,31 @@ export function KanbanColumn({
       </div>
 
       <div
-        onDragOver={onDragOver}
-        onDrop={(e) => onDrop(e, status)}
-        className={`flex-1 ${colors.bg} rounded-lg p-3 min-h-[500px] transition-colors`}
+        ref={setNodeRef}
+        className={`flex-1 ${colors.bg} rounded-lg p-3 min-h-[500px] transition-colors ${
+          isOver ? 'ring-2 ring-primary-400 ring-opacity-50' : ''
+        }`}
       >
-        {tasks.length === 0 ? (
-          <div className="flex items-center justify-center h-32 text-neutral-400 text-sm">
-            No tasks
-          </div>
-        ) : (
-          tasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onDragStart={onDragStart}
-              onDragEnd={onDragEnd}
-              onClick={onTaskClick}
-            />
-          ))
-        )}
+        <SortableContext
+          items={tasks.map((t) => t.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {tasks.length === 0 ? (
+            <div className="flex items-center justify-center h-32 text-neutral-400 text-sm">
+              No tasks
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {tasks.map((task) => (
+                <SortableTaskCard
+                  key={task.id}
+                  task={task}
+                  onClick={onTaskClick || (() => {})}
+                />
+              ))}
+            </div>
+          )}
+        </SortableContext>
       </div>
     </div>
   )

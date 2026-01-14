@@ -1,4 +1,4 @@
-import type { ApiResponse, Project, Task, Notification, User } from '@nebula/types'
+import type { ApiResponse, Project, Task, Notification, User } from '@flareboard/types'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 
@@ -100,20 +100,55 @@ class ApiClient {
     })
   }
 
-  // Notifications
-  async getNotifications() {
-    return this.request<Notification[]>('/notifications')
+  async getDeletedTasks(projectId?: string) {
+    const query = projectId ? `?projectId=${projectId}` : ''
+    return this.request<Task[]>(`/tasks/deleted${query}`)
   }
 
-  async markAsRead(id: string) {
-    return this.request(`/notifications/${id}/read`, {
+  async restoreTask(id: string) {
+    return this.request<Task>(`/tasks/${id}/restore`, {
+      method: 'POST',
+    })
+  }
+
+  // Notifications
+  async getNotifications(params?: { unreadOnly?: boolean; category?: string; limit?: number; offset?: number }) {
+    const query = new URLSearchParams()
+    if (params?.unreadOnly) query.append('unreadOnly', 'true')
+    if (params?.category) query.append('category', params.category)
+    if (params?.limit) query.append('limit', params.limit.toString())
+    if (params?.offset) query.append('offset', params.offset.toString())
+    const queryString = query.toString()
+    return this.request<{ notifications: Notification[]; total: number; unreadCount: number }>(
+      `/notifications${queryString ? `?${queryString}` : ''}`
+    )
+  }
+
+  async getUnreadCount() {
+    return this.request<{ count: number }>('/notifications/unread-count')
+  }
+
+  async markNotificationAsRead(id: string) {
+    return this.request<Notification>(`/notifications/${id}/read`, {
       method: 'PATCH',
     })
   }
 
-  async markAllAsRead() {
-    return this.request('/notifications/mark-all-read', {
+  async markAllNotificationsAsRead() {
+    return this.request<{ count: number }>('/notifications/mark-all-read', {
       method: 'POST',
+    })
+  }
+
+  async deleteNotification(id: string) {
+    return this.request(`/notifications/${id}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async clearReadNotifications() {
+    return this.request<{ count: number }>('/notifications/clear-read', {
+      method: 'DELETE',
     })
   }
 }
