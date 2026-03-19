@@ -1,12 +1,15 @@
 import { prisma } from '../lib/prisma.js'
 import { AppError } from '../middlewares/errorHandler.js'
 import { permissionsService } from './permissions.service.js'
+import { richTextService } from './richtext.service.js'
 import type { Task, TaskStatus, TaskPriority } from '@flareboard/types'
 
 export interface CreateTaskDTO {
   projectId: string
   title: string
   description?: string
+  descriptionHtml?: string
+  descriptionJson?: any
   status?: string
   priority?: string
   assignedTo?: string
@@ -17,6 +20,8 @@ export interface CreateTaskDTO {
 export interface UpdateTaskDTO {
   title?: string
   description?: string
+  descriptionHtml?: string
+  descriptionJson?: any
   status?: string
   priority?: string
   assignedTo?: string | null
@@ -127,6 +132,8 @@ export class TaskService {
       projectId: string
       title: string
       description?: string
+      descriptionHtml?: string
+      descriptionJson?: any
       status?: string
       priority?: string
       assignedTo?: string
@@ -173,6 +180,12 @@ export class TaskService {
     // Check permission
     await permissionsService.assertCanCreateTaskInProject(userId, data.projectId)
 
+    // Sanitize HTML if provided
+    let descriptionHtml = data.descriptionHtml
+    if (descriptionHtml) {
+      descriptionHtml = richTextService.sanitizeHtml(descriptionHtml)
+    }
+
     // Get the next position for this project
     const maxPosition = await prisma.task.aggregate({
       where: { projectId: data.projectId },
@@ -181,7 +194,16 @@ export class TaskService {
 
     const task = await prisma.task.create({
       data: {
-        ...data,
+        projectId: data.projectId,
+        title: data.title,
+        description: data.description,
+        descriptionHtml,
+        descriptionJson: data.descriptionJson,
+        status: data.status,
+        priority: data.priority,
+        assignedTo: data.assignedTo,
+        dueDate: data.dueDate,
+        parentId: data.parentId,
         position: (maxPosition._max.position || 0) + 1,
       },
     })
@@ -195,6 +217,8 @@ export class TaskService {
     data: {
       title?: string
       description?: string
+      descriptionHtml?: string
+      descriptionJson?: any
       status?: string
       priority?: string
       assignedTo?: string | null
@@ -217,10 +241,16 @@ export class TaskService {
     // Check permission
     await permissionsService.assertCanAccessResource(userId, 'task', taskId, 'write')
 
+    // Sanitize HTML if provided
+    const updateData = { ...data }
+    if (updateData.descriptionHtml) {
+      updateData.descriptionHtml = richTextService.sanitizeHtml(updateData.descriptionHtml)
+    }
+
     // Update task
     const task = await prisma.task.update({
       where: { id: taskId },
-      data,
+      data: updateData,
     })
 
     return task as Task

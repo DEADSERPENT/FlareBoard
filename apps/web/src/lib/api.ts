@@ -1,6 +1,7 @@
 import type { ApiResponse, Project, Task, Notification, User } from '@flareboard/types'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+export const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+const API_URL = API_BASE
 
 class ApiClient {
   private async request<T>(
@@ -148,6 +149,36 @@ class ApiClient {
 
   async clearReadNotifications() {
     return this.request<{ count: number }>('/notifications/clear-read', {
+      method: 'DELETE',
+    })
+  }
+
+  // Users
+  async getUsers() {
+    return this.request<any[]>('/users')
+  }
+
+  async getActivity(entityType?: string, limit = 50) {
+    const query = new URLSearchParams()
+    if (entityType && entityType !== 'all') query.append('entityType', entityType)
+    query.append('limit', limit.toString())
+    return this.request<any>(`/activity?${query.toString()}`)
+  }
+
+  // Admin
+  async adminGetAllUsers() {
+    return this.request<any[]>('/users/admin/all')
+  }
+
+  async adminUpdateUserRole(userId: string, roleName: string) {
+    return this.request<any>(`/users/admin/${userId}/role`, {
+      method: 'PATCH',
+      body: JSON.stringify({ roleName }),
+    })
+  }
+
+  async adminDeleteUser(userId: string) {
+    return this.request<any>(`/users/admin/${userId}`, {
       method: 'DELETE',
     })
   }

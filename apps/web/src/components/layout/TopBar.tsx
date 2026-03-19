@@ -3,6 +3,7 @@ import { Search, Menu, LogOut, User, Settings, FolderKanban, CheckSquare } from 
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { NotificationCenter } from '../notifications/NotificationCenter'
+import { API_BASE } from '../../lib/api'
 
 export const TopBar = () => {
   const { user, logout, token } = useAuth()
@@ -32,7 +33,7 @@ export const TopBar = () => {
 
     const timer = setTimeout(async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/search?q=${encodeURIComponent(searchQuery)}`, {
+        const response = await fetch(`${API_BASE}/search?q=${encodeURIComponent(searchQuery)}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         const data = await response.json()

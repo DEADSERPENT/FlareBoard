@@ -19,7 +19,8 @@ export const authenticate = (
     if (!token && process.env.NODE_ENV === 'development') {
       req.user = {
         userId: 'dev-user',
-        roleId: 'admin',
+        roleId: 'dev-role',
+        roleName: 'Member',
         email: 'dev@flareboard.com',
       }
       return next()
@@ -41,16 +42,20 @@ export const authenticate = (
   }
 }
 
+// Authorize by role name (e.g. authorize('Admin'), authorize('Admin', 'Member'))
 export const authorize = (...roles: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
       throw new AppError(401, 'UNAUTHORIZED', 'Authentication required')
     }
 
-    if (!roles.includes(req.user.roleId)) {
+    if (!roles.includes(req.user.roleName)) {
       throw new AppError(403, 'FORBIDDEN', 'Insufficient permissions')
     }
 
     next()
   }
 }
+
+// Shorthand: admin-only routes
+export const isAdmin = authorize('Admin')

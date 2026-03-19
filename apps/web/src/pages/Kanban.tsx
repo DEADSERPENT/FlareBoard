@@ -10,7 +10,7 @@ import {
   DragOverEvent,
   closestCorners,
 } from '@dnd-kit/core'
-import { Plus, Filter } from 'lucide-react'
+import { Plus, Filter, X } from 'lucide-react'
 import { KanbanColumn } from '../components/kanban/KanbanColumn'
 import { TaskCard } from '../components/kanban/TaskCard'
 import { TaskModal } from '../components/kanban/TaskModal'
@@ -21,6 +21,7 @@ import {
   useCreateTask,
   useUpdateTaskOptimistic,
 } from '../hooks/useTasks'
+import { useUsers } from '../hooks/useUsers'
 import type { Task } from '@flareboard/types'
 
 const COLUMNS = [
@@ -31,6 +32,8 @@ const COLUMNS = [
 
 export function KanbanPage() {
   const [selectedProject, setSelectedProject] = useState<string>('all')
+  const [filterPriority, setFilterPriority] = useState<string>('all')
+  const [filterAssignee, setFilterAssignee] = useState<string>('all')
   const [activeTask, setActiveTask] = useState<Task | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
@@ -38,6 +41,7 @@ export function KanbanPage() {
 
   // Fetch data using TanStack Query hooks
   const { data: projects = [], isLoading: projectsLoading } = useProjects()
+  const { data: users = [] } = useUsers()
   const projectId = selectedProject === 'all' ? undefined : selectedProject
   const { data: tasks = [], isLoading: tasksLoading, refetch: refetchTasks } = useTasks(projectId)
 
@@ -160,12 +164,22 @@ export function KanbanPage() {
     }
   }
 
+  const filteredTasks = useMemo(() => {
+    return tasks.filter((task) => {
+      if (filterPriority !== 'all' && task.priority !== filterPriority) return false
+      if (filterAssignee !== 'all' && task.assignedTo !== filterAssignee) return false
+      return true
+    })
+  }, [tasks, filterPriority, filterAssignee])
+
   const getTasksByStatus = useMemo(
     () => (status: string) => {
-      return tasks.filter((task) => task.status === status).sort((a, b) => a.position - b.position)
+      return filteredTasks.filter((task) => task.status === status).sort((a, b) => a.position - b.position)
     },
-    [tasks]
+    [filteredTasks]
   )
+
+  const hasActiveFilters = filterPriority !== 'all' || filterAssignee !== 'all'
 
   const loading = projectsLoading || tasksLoading
 
@@ -185,7 +199,7 @@ export function KanbanPage() {
           <p className="text-neutral-600 mt-1">Manage your tasks with drag and drop</p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-neutral-500" />
             <select
@@ -201,6 +215,38 @@ export function KanbanPage() {
               ))}
             </select>
           </div>
+
+          <select
+            value={filterPriority}
+            onChange={(e) => setFilterPriority(e.target.value)}
+            className="px-3 py-2 bg-white border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+          >
+            <option value="all">All Priorities</option>
+            <option value="Urgent">Urgent</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+
+          <select
+            value={filterAssignee}
+            onChange={(e) => setFilterAssignee(e.target.value)}
+            className="px-3 py-2 bg-white border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+          >
+            <option value="all">All Assignees</option>
+            {users.map((u) => (
+              <option key={u.id} value={u.id}>{u.fullName}</option>
+            ))}
+          </select>
+
+          {hasActiveFilters && (
+            <button
+              onClick={() => { setFilterPriority('all'); setFilterAssignee('all') }}
+              className="flex items-center gap-1 px-2 py-1 text-xs text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+            >
+              <X className="w-3 h-3" /> Clear filters
+            </button>
+          )}
 
           <Button variant="primary" size="sm" onClick={() => handleAddTask('Todo')}>
             <Plus className="w-4 h-4 mr-2" />

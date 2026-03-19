@@ -6,12 +6,14 @@ interface User {
   email: string
   fullName: string
   roleId: string
+  roleName?: string
   avatarUrl?: string | null
 }
 
 interface AuthContextType {
   user: User | null
   token: string | null
+  isAdmin: boolean
   login: (token: string, user: User) => void
   logout: () => void
   isAuthenticated: boolean
@@ -53,11 +55,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     navigate('/login')
   }
 
+  const isAdmin = user?.roleName === 'Admin'
+
   return (
     <AuthContext.Provider
       value={{
         user,
         token,
+        isAdmin,
         login,
         logout,
         isAuthenticated: !!token && !!user,

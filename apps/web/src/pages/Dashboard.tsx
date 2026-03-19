@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
+import { formatDistanceToNow } from 'date-fns'
 import { FolderKanban, CheckCircle2, Clock, TrendingUp } from 'lucide-react'
+import { API_BASE } from '../lib/api'
 import { StatsWidget } from '../components/widgets/StatsWidget'
 import { ChartWidget } from '../components/widgets/ChartWidget'
 import { ActivityWidget } from '../components/widgets/ActivityWidget'
@@ -33,14 +35,14 @@ export const DashboardPage = () => {
   const fetchDashboardData = async () => {
     try {
       // Fetch projects
-      const projectsRes = await fetch('http://localhost:3000/api/projects', {
+      const projectsRes = await fetch(`${API_BASE}/projects`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       const projectsData = await projectsRes.json()
       const projects = projectsData.success ? projectsData.data : []
 
       // Fetch tasks
-      const tasksRes = await fetch('http://localhost:3000/api/tasks', {
+      const tasksRes = await fetch(`${API_BASE}/tasks`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       const tasksData = await tasksRes.json()
@@ -73,31 +75,29 @@ export const DashboardPage = () => {
       ]
       setChartData(tasksByStatus)
 
-      // Generate mock activities (replace with real activity log later)
-      const mockActivities = [
-        {
-          id: '1',
-          type: 'task_completed' as const,
-          message: 'completed a task',
-          user: 'You',
-          timestamp: '2 hours ago',
-        },
-        {
-          id: '2',
-          type: 'task_created' as const,
-          message: 'created a new task',
-          user: 'You',
-          timestamp: '4 hours ago',
-        },
-        {
-          id: '3',
-          type: 'project_created' as const,
-          message: 'created a new project',
-          user: 'You',
-          timestamp: '1 day ago',
-        },
-      ]
-      setActivities(mockActivities)
+      // Fetch real activity log
+      try {
+        const activityRes = await fetch(`${API_BASE}/activity?limit=5`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        const activityData = await activityRes.json()
+        if (activityData.success) {
+          const logs = activityData.data.logs || []
+          setActivities(
+            logs.map((log: any) => ({
+              id: log.id,
+              type: log.entityType === 'task'
+                ? log.action.includes('created') ? 'task_created' : 'task_completed'
+                : 'project_created',
+              message: log.action.split('.').join(' '),
+              user: log.user?.fullName || 'You',
+              timestamp: formatDistanceToNow(new Date(log.timestamp), { addSuffix: true }),
+            }))
+          )
+        }
+      } catch {
+        // ignore activity errors
+      }
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error)
     } finally {

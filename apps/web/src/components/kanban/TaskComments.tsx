@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { MessageSquare, Send, Loader2 } from 'lucide-react'
 import { Button } from '../ui/Button'
+import { RichTextEditor } from '../ui/RichTextEditor'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
+import { API_BASE } from '../../lib/api'
 import { formatDistanceToNow } from 'date-fns'
 
 interface Comment {
@@ -10,6 +12,8 @@ interface Comment {
   taskId: string
   userId: string
   content: string
+  contentHtml?: string
+  contentJson?: any
   createdAt: Date | string
   updatedAt: Date | string
   user?: {
@@ -30,6 +34,8 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [newComment, setNewComment] = useState('')
+  const [newCommentHtml, setNewCommentHtml] = useState('')
+  const [newCommentJson, setNewCommentJson] = useState<any>(null)
 
   useEffect(() => {
     if (taskId) {
@@ -40,7 +46,7 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
   const fetchComments = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`http://localhost:3000/api/comments/task/${taskId}`, {
+      const response = await fetch(`${API_BASE}/comments/task/${taskId}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await response.json()
@@ -55,14 +61,14 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
   }
 
   const handleAddComment = async () => {
-    if (!newComment.trim()) {
+    if (!newCommentHtml.trim() && !newComment.trim()) {
       toast.error('Validation Error', 'Comment cannot be empty')
       return
     }
 
     setSubmitting(true)
     try {
-      const response = await fetch('http://localhost:3000/api/comments', {
+      const response = await fetch(`${API_BASE}/comments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -70,7 +76,9 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
         },
         body: JSON.stringify({
           taskId,
-          content: newComment.trim(),
+          content: newComment || newCommentHtml,
+          contentHtml: newCommentHtml,
+          contentJson: newCommentJson,
         }),
       })
 
@@ -78,6 +86,8 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
       if (data.success) {
         setComments([data.data, ...comments])
         setNewComment('')
+        setNewCommentHtml('')
+        setNewCommentJson(null)
         toast.success('Success', 'Comment added')
       } else {
         toast.error('Error', data.error?.message || 'Failed to add comment')
@@ -86,13 +96,6 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
       toast.error('Error', 'Failed to add comment')
     } finally {
       setSubmitting(false)
-    }
-  }
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault()
-      handleAddComment()
     }
   }
 
@@ -115,20 +118,22 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
 
       {/* Add Comment Form */}
       <div className="bg-neutral-50 rounded-lg p-4">
-        <textarea
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          onKeyDown={handleKeyPress}
-          placeholder="Add a comment... (Ctrl+Enter to submit)"
-          rows={3}
-          className="w-full px-3 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white text-neutral-900 resize-none"
+        <RichTextEditor
+          content={newCommentHtml}
+          onChange={(html, json) => {
+            setNewCommentHtml(html)
+            setNewCommentJson(json)
+            setNewComment(html) // Keep for backward compatibility
+          }}
+          placeholder="Add a comment..."
+          minHeight="100px"
         />
         <div className="flex justify-end mt-2">
           <Button
             variant="primary"
             size="sm"
             onClick={handleAddComment}
-            disabled={submitting || !newComment.trim()}
+            disabled={submitting || !newCommentHtml.trim()}
           >
             {submitting ? (
               <>
@@ -186,9 +191,16 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
                       {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
                     </span>
                   </div>
-                  <p className="text-sm text-neutral-700 whitespace-pre-wrap break-words">
-                    {comment.content}
-                  </p>
+                  {comment.contentHtml ? (
+                    <div
+                      className="prose prose-sm max-w-none text-neutral-700"
+                      dangerouslySetInnerHTML={{ __html: comment.contentHtml }}
+                    />
+                  ) : (
+                    <p className="text-sm text-neutral-700 whitespace-pre-wrap break-words">
+                      {comment.content}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

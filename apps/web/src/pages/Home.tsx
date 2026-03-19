@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { useProjects } from '@/hooks/useProjects'
 import { useTasks } from '@/hooks/useTasks'
+import { useAuth } from '@/contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
 import {
   FolderKanban,
   CheckCircle2,
@@ -16,6 +18,8 @@ import {
 import { useMemo } from 'react'
 
 export const HomePage = () => {
+  const { user } = useAuth()
+  const navigate = useNavigate()
   const { data: projects = [], isLoading: projectsLoading } = useProjects()
   const { data: tasks = [], isLoading: tasksLoading } = useTasks()
 
@@ -76,7 +80,7 @@ export const HomePage = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-neutral-900">Welcome back, Samartha</h1>
+          <h1 className="text-3xl font-bold text-neutral-900">Welcome back, {user?.fullName?.split(' ')[0] ?? 'there'}</h1>
           <p className="text-neutral-600 mt-1">Here's what's happening with your projects</p>
         </div>
         <Button variant="primary">
@@ -161,7 +165,7 @@ export const HomePage = () => {
         <Card className="card-hover">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-neutral-900">Recent Tasks</h2>
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" onClick={() => navigate('/kanban')}>
               View All
             </Button>
           </div>
@@ -214,7 +218,7 @@ export const HomePage = () => {
         <Card className="card-hover">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-neutral-900">Active Projects</h2>
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" onClick={() => navigate('/projects')}>
               View All
             </Button>
           </div>

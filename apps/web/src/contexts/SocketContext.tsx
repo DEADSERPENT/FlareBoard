@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { io, Socket } from 'socket.io-client'
 import { useAuth } from './AuthContext'
 import { useToast } from './ToastContext'
+import { API_BASE } from '../lib/api'
 import type { Notification } from '@flareboard/types'
 
 interface SocketContextType {
@@ -48,7 +49,8 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
       return
     }
 
-    const newSocket = io('http://localhost:3000', {
+    const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000'
+    const newSocket = io(socketUrl, {
       auth: { token },
     })
 
@@ -101,7 +103,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
   // Fetch initial notifications
   const fetchNotifications = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/notifications', {
+      const response = await fetch(`${API_BASE}/notifications`, {
         headers: { Authorization: `Bearer ${token}` },
       })
 
@@ -120,7 +122,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
   // Mark notification as read
   const markAsRead = async (notificationId: string) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/notifications/${notificationId}/read`, {
+      const response = await fetch(`${API_BASE}/notifications/${notificationId}/read`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -139,7 +141,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
   // Mark all notifications as read
   const markAllAsRead = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/notifications/mark-all-read', {
+      const response = await fetch(`${API_BASE}/notifications/mark-all-read`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -156,7 +158,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
   // Delete notification
   const deleteNotification = async (notificationId: string) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/notifications/${notificationId}`, {
+      const response = await fetch(`${API_BASE}/notifications/${notificationId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -176,7 +178,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
   // Clear all read notifications
   const clearReadNotifications = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/notifications/clear-read', {
+      const response = await fetch(`${API_BASE}/notifications/clear-read`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       })

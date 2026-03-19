@@ -3,6 +3,7 @@ import { Paperclip, Upload, File, Image, FileText, X, Download, Loader2 } from '
 import { Button } from '../ui/Button'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
+import { API_BASE } from '../../lib/api'
 import { formatDistanceToNow } from 'date-fns'
 
 interface Attachment {
@@ -42,7 +43,7 @@ export function TaskAttachments({ taskId }: TaskAttachmentsProps) {
   const fetchAttachments = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`http://localhost:3000/api/attachments/task/${taskId}`, {
+      const response = await fetch(`${API_BASE}/attachments/task/${taskId}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await response.json()
@@ -110,7 +111,7 @@ export function TaskAttachments({ taskId }: TaskAttachmentsProps) {
       // In production, you'd upload to a file storage service (S3, Cloudinary, etc.)
       const mockFileUrl = `https://example.com/uploads/${Date.now()}-${file.name}`
 
-      const response = await fetch('http://localhost:3000/api/attachments', {
+      const response = await fetch(`${API_BASE}/attachments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -152,7 +153,7 @@ export function TaskAttachments({ taskId }: TaskAttachmentsProps) {
     }
 
     try {
-      const response = await fetch(`http://localhost:3000/api/attachments/${attachmentId}`, {
+      const response = await fetch(`${API_BASE}/attachments/${attachmentId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       })

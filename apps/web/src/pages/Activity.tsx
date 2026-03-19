@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/Card'
 import { useAuth } from '@/contexts/AuthContext'
+import { API_BASE } from '@/lib/api'
 import {
   Activity as ActivityIcon,
   FolderKanban,
@@ -39,7 +40,7 @@ export const ActivityPage = () => {
   const fetchActivities = async () => {
     try {
       const params = filter !== 'all' ? `?entityType=${filter}` : ''
-      const response = await fetch(`http://localhost:3000/api/activity${params}`, {
+      const response = await fetch(`${API_BASE}/activity${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await response.json()

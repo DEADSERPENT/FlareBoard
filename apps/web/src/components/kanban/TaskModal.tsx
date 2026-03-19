@@ -1,11 +1,13 @@
 import { useState, useEffect, FormEvent } from 'react'
-import { Calendar, AlertCircle } from 'lucide-react'
+import { Calendar, AlertCircle, User } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Input } from '../ui/Input'
 import { Modal } from '../ui/Modal'
+import { RichTextEditor } from '../ui/RichTextEditor'
 import { TaskComments } from './TaskComments'
 import { TaskAttachments } from './TaskAttachments'
 import { SubtaskList } from './SubtaskList'
+import { useUsers } from '../../hooks/useUsers'
 import type { Task, Project } from '@flareboard/types'
 
 // Local form data type that allows string values for select fields
@@ -13,6 +15,8 @@ interface TaskFormData {
   id?: string
   title: string
   description?: string
+  descriptionHtml?: string
+  descriptionJson?: any
   status: string
   priority: string
   projectId: string
@@ -42,6 +46,8 @@ export function TaskModal({
   const [formData, setFormData] = useState<TaskFormData>({
     title: '',
     description: '',
+    descriptionHtml: '',
+    descriptionJson: null,
     status: defaultStatus || 'Todo',
     priority: 'Medium',
     projectId: defaultProjectId || '',
@@ -50,6 +56,7 @@ export function TaskModal({
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const { data: users = [] } = useUsers()
 
   useEffect(() => {
     if (task) {
@@ -57,6 +64,8 @@ export function TaskModal({
         id: task.id,
         title: task.title,
         description: task.description,
+        descriptionHtml: (task as any).descriptionHtml,
+        descriptionJson: (task as any).descriptionJson,
         status: task.status,
         priority: task.priority,
         projectId: task.projectId,
@@ -67,6 +76,8 @@ export function TaskModal({
       setFormData({
         title: '',
         description: '',
+        descriptionHtml: '',
+        descriptionJson: null,
         status: defaultStatus || 'Todo',
         priority: 'Medium',
         projectId: defaultProjectId || '',
@@ -125,13 +136,18 @@ export function TaskModal({
           <label htmlFor="description" className="block text-sm font-medium text-neutral-700 mb-2">
             Description
           </label>
-          <textarea
-            id="description"
-            value={formData.description || ''}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          <RichTextEditor
+            content={formData.descriptionHtml || formData.description || ''}
+            onChange={(html, json) => {
+              setFormData({
+                ...formData,
+                descriptionHtml: html,
+                descriptionJson: json,
+                description: html, // Keep for backward compatibility
+              })
+            }}
             placeholder="Add task description..."
-            rows={3}
-            className="w-full px-3 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900"
+            minHeight="150px"
           />
         </div>
 
@@ -213,6 +229,28 @@ export function TaskModal({
               onChange={(e) => setFormData({ ...formData, dueDate: e.target.value || null })}
             />
           </div>
+        </div>
+
+        <div>
+          <label htmlFor="assignee" className="block text-sm font-medium text-neutral-700 mb-2">
+            <div className="flex items-center gap-1">
+              <User className="w-4 h-4" />
+              Assignee
+            </div>
+          </label>
+          <select
+            id="assignee"
+            value={formData.assignedTo || ''}
+            onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value || null })}
+            className="w-full px-3 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900"
+          >
+            <option value="">Unassigned</option>
+            {users.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.fullName}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-200">

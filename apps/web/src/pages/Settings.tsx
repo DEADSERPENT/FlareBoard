@@ -8,6 +8,7 @@ import { User, Bell, Shield, Palette, Key, Trash2 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/contexts/ToastContext'
 import { TrashModal } from '@/components/TrashModal'
+import { API_BASE } from '@/lib/api'
 
 export const SettingsPage = () => {
   const { token } = useAuth()
@@ -34,7 +35,7 @@ export const SettingsPage = () => {
 
   const fetchProfile = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/users/profile', {
+      const response = await fetch(`${API_BASE}/users/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await response.json()
@@ -52,7 +53,7 @@ export const SettingsPage = () => {
   const handleUpdateProfile = async () => {
     setLoading(true)
     try {
-      const response = await fetch('http://localhost:3000/api/users/profile', {
+      const response = await fetch(`${API_BASE}/users/profile`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -88,7 +89,7 @@ export const SettingsPage = () => {
 
     setLoading(true)
     try {
-      const response = await fetch('http://localhost:3000/api/users/change-password', {
+      const response = await fetch(`${API_BASE}/users/change-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -116,7 +117,7 @@ export const SettingsPage = () => {
 
   const handleUpdatePreferences = async (updates: any) => {
     try {
-      const response = await fetch('http://localhost:3000/api/users/preferences', {
+      const response = await fetch(`${API_BASE}/users/preferences`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

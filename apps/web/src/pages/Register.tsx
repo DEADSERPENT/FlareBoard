@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Card } from '../components/ui/Card'
 import { useAuth } from '../contexts/AuthContext'
+import { API_BASE } from '../lib/api'
 
 export function Register() {
   const navigate = useNavigate()
@@ -33,7 +34,7 @@ export function Register() {
     setLoading(true)
 
     try {
-      const response = await fetch('http://localhost:3000/api/auth/register', {
+      const response = await fetch(`${API_BASE}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, fullName }),

@@ -69,8 +69,17 @@ export function TaskCard({ task, onDragStart, onDragEnd, onClick }: TaskCardProp
         </Badge>
       </div>
 
-      {task.description && (
-        <p className="text-xs text-neutral-600 mb-3 line-clamp-2">{task.description}</p>
+      {((task as any).descriptionHtml || task.description) && (
+        <div className="text-xs text-neutral-600 mb-3 line-clamp-2">
+          {(task as any).descriptionHtml ? (
+            <div
+              className="prose prose-xs max-w-none"
+              dangerouslySetInnerHTML={{ __html: (task as any).descriptionHtml }}
+            />
+          ) : (
+            <p>{task.description}</p>
+          )}
+        </div>
       )}
 
       <div className="flex items-center justify-between text-xs text-neutral-500">

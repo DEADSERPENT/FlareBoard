@@ -6,6 +6,41 @@ import { AppError } from '../middlewares/errorHandler.js'
 import bcrypt from 'bcryptjs'
 
 class UsersController {
+  // Get all users (for assignee dropdowns, team page)
+  async getAllUsers(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) {
+        throw new AppError(401, 'UNAUTHORIZED', 'Authentication required')
+      }
+
+      const users = await prisma.user.findMany({
+        select: {
+          id: true,
+          email: true,
+          fullName: true,
+          avatarUrl: true,
+          roleId: true,
+          createdAt: true,
+          role: { select: { name: true } },
+          _count: {
+            select: {
+              assignedTasks: { where: { deletedAt: null } },
+            },
+          },
+        },
+        orderBy: { fullName: 'asc' },
+      })
+
+      const response: ApiResponse<any[]> = {
+        success: true,
+        data: users,
+      }
+      res.json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+
   // Get current user profile
   async getProfile(req: AuthRequest, res: Response, next: NextFunction) {
     try {
@@ -154,6 +189,91 @@ class UsersController {
       const response: ApiResponse<any> = {
         success: true,
         data: preferences,
+      }
+      res.json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  // ── Admin: list all users with full details ───────────────────────────────
+  async adminGetAllUsers(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const users = await prisma.user.findMany({
+        select: {
+          id: true,
+          email: true,
+          fullName: true,
+          avatarUrl: true,
+          roleId: true,
+          createdAt: true,
+          role: { select: { id: true, name: true } },
+          _count: {
+            select: {
+              assignedTasks: { where: { deletedAt: null } },
+              projects: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'asc' },
+      })
+
+      const response: ApiResponse<any[]> = { success: true, data: users }
+      res.json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  // ── Admin: update a user's role ───────────────────────────────────────────
+  async adminUpdateUserRole(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) throw new AppError(401, 'UNAUTHORIZED', 'Authentication required')
+
+      const { id } = req.params
+      const { roleName } = req.body
+
+      if (!roleName || !['Admin', 'Member'].includes(roleName)) {
+        throw new AppError(400, 'VALIDATION_ERROR', 'roleName must be "Admin" or "Member"')
+      }
+
+      // Prevent admin from downgrading themselves
+      if (id === req.user.userId && roleName !== 'Admin') {
+        throw new AppError(400, 'FORBIDDEN', 'Cannot change your own admin role')
+      }
+
+      const role = await prisma.role.findFirst({ where: { name: roleName } })
+      if (!role) throw new AppError(404, 'NOT_FOUND', 'Role not found')
+
+      const user = await prisma.user.update({
+        where: { id },
+        data: { roleId: role.id },
+        select: { id: true, email: true, fullName: true, roleId: true, role: { select: { name: true } } },
+      })
+
+      const response: ApiResponse<any> = { success: true, data: user }
+      res.json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  // ── Admin: delete a user ──────────────────────────────────────────────────
+  async adminDeleteUser(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) throw new AppError(401, 'UNAUTHORIZED', 'Authentication required')
+
+      const { id } = req.params
+
+      if (id === req.user.userId) {
+        throw new AppError(400, 'FORBIDDEN', 'Cannot delete your own account from admin panel')
+      }
+
+      await prisma.user.delete({ where: { id } })
+
+      const response: ApiResponse<{ message: string }> = {
+        success: true,
+        data: { message: 'User deleted successfully' },
       }
       res.json(response)
     } catch (error) {

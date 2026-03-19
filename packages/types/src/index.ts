@@ -8,19 +8,21 @@ export interface User {
   fullName: string
   avatarUrl?: string
   roleId: string
+  roleName?: string
   createdAt: Date
   updatedAt: Date
 }
 
 export interface Role {
   id: string
-  name: 'Admin' | 'Manager' | 'Viewer'
+  name: 'Admin' | 'Member'
   permissions: Record<string, boolean>
 }
 
 export interface AuthTokenPayload {
   userId: string
   roleId: string
+  roleName: string
   email: string
 }
 

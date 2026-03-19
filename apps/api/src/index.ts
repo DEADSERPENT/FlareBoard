@@ -14,15 +14,27 @@ import searchRouter from './routes/search.routes.js'
 import usersRouter from './routes/users.routes.js'
 import activityRouter from './routes/activity.routes.js'
 import { socketService } from './services/socket.service.js'
+import { prisma } from './lib/prisma.js'
 
 dotenv.config()
+
+// Ensure default roles exist (idempotent — safe to run on every boot)
+async function bootstrapRoles() {
+  const roles = [
+    { name: 'Admin', permissions: { canManageUsers: true, canManageProjects: true, canManageSettings: true, canViewAnalytics: true } },
+    { name: 'Member', permissions: { canManageUsers: false, canManageProjects: true, canManageSettings: false, canViewAnalytics: true } },
+  ]
+  for (const role of roles) {
+    await prisma.role.upsert({ where: { name: role.name }, update: {}, create: role })
+  }
+}
 
 const app = express()
 const httpServer = createServer(app)
 
 // Middleware
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173', 'http://localhost:5174'],
+  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'],
   credentials: true,
 }))
 app.use(express.json())
@@ -53,8 +65,15 @@ socketService.initialize(httpServer)
 
 // Start server
 const PORT = process.env.PORT || 3000
-httpServer.listen(PORT, () => {
-  console.log(`🔥 FlareBoard API running on port ${PORT}`)
-  console.log(`🔌 WebSocket server ready`)
-  console.log(`📊 Environment: ${process.env.NODE_ENV}`)
-})
+bootstrapRoles()
+  .then(() => {
+    httpServer.listen(PORT, () => {
+      console.log(`🔥 FlareBoard API running on port ${PORT}`)
+      console.log(`🔌 WebSocket server ready`)
+      console.log(`📊 Environment: ${process.env.NODE_ENV}`)
+    })
+  })
+  .catch((err) => {
+    console.error('❌ Failed to bootstrap roles:', err)
+    process.exit(1)
+  })

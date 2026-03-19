@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Card } from '../components/ui/Card'
 import { useAuth } from '../contexts/AuthContext'
+import { API_BASE } from '../lib/api'
 
 export function Login() {
   const navigate = useNavigate()
@@ -20,7 +21,7 @@ export function Login() {
     setLoading(true)
 
     try {
-      const response = await fetch('http://localhost:3000/api/auth/login', {
+      const response = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -125,11 +126,6 @@ export function Login() {
           </p>
         </div>
 
-        <div className="mt-4 text-center">
-          <p className="text-xs text-neutral-500">
-            Demo: admin@flareboard.com / password123
-          </p>
-        </div>
       </Card>
     </div>
   )

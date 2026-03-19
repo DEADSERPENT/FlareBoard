@@ -8,6 +8,7 @@ import { useProjects } from '@/hooks/useProjects'
 import { useTasks } from '@/hooks/useTasks'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/contexts/ToastContext'
+import { API_BASE } from '@/lib/api'
 import { Plus, FolderKanban, Calendar, User, TrendingUp, Edit, Trash2 } from 'lucide-react'
 
 interface Project {
@@ -63,8 +64,8 @@ export const ProjectsPage = () => {
     setLoading(true)
     try {
       const url = editingProject
-        ? `http://localhost:3000/api/projects/${editingProject.id}`
-        : 'http://localhost:3000/api/projects'
+        ? `${API_BASE}/projects/${editingProject.id}`
+        : `${API_BASE}/projects`
 
       const response = await fetch(url, {
         method: editingProject ? 'PATCH' : 'POST',
@@ -94,7 +95,7 @@ export const ProjectsPage = () => {
   const handleDelete = async (projectId: string) => {
     setLoading(true)
     try {
-      const response = await fetch(`http://localhost:3000/api/projects/${projectId}`, {
+      const response = await fetch(`${API_BASE}/projects/${projectId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       })
