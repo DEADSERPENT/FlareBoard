@@ -71,12 +71,12 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
       setUnreadCount((prev) => prev + 1)
 
       // Show toast notification
-      toast.info(notification.title || 'Notification', notification.message || notification.content)
+      toast.info(notification.title || 'Notification', notification.message || (notification as any).content)
 
       // Show browser notification if permission granted
       if (Notification.permission === 'granted') {
         new Notification(notification.title || 'Notification', {
-          body: notification.message || notification.content,
+          body: notification.message || (notification as any).content,
           icon: '/flare-icon.png',
         })
       }

@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent } from 'react'
-import { Calendar, AlertCircle, User } from 'lucide-react'
+import { Calendar, AlertCircle, User, FolderKanban, Layers, Type } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Input } from '../ui/Input'
 import { Modal } from '../ui/Modal'
@@ -113,13 +113,15 @@ export function TaskModal({
     <Modal isOpen={isOpen} onClose={onClose} title={task ? 'Edit Task' : 'Create Task'}>
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+          <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            <AlertCircle className="w-4 h-4 shrink-0" />
             {error}
           </div>
         )}
 
         <div>
-          <label htmlFor="title" className="block text-sm font-medium text-neutral-700 mb-2">
+          <label htmlFor="title" className="flex items-center gap-1.5 text-sm font-medium text-neutral-700 mb-2">
+            <Type className="w-4 h-4 text-neutral-400" />
             Task Title *
           </label>
           <Input
@@ -153,7 +155,8 @@ export function TaskModal({
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="project" className="block text-sm font-medium text-neutral-700 mb-2">
+            <label htmlFor="project" className="flex items-center gap-1.5 text-sm font-medium text-neutral-700 mb-2">
+              <FolderKanban className="w-4 h-4 text-neutral-400" />
               Project *
             </label>
             <select
@@ -173,7 +176,8 @@ export function TaskModal({
           </div>
 
           <div>
-            <label htmlFor="status" className="block text-sm font-medium text-neutral-700 mb-2">
+            <label htmlFor="status" className="flex items-center gap-1.5 text-sm font-medium text-neutral-700 mb-2">
+              <Layers className="w-4 h-4 text-neutral-400" />
               Status
             </label>
             <select

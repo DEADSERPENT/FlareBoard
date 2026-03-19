@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api'
-import type { Notification } from '@flareboard/types'
 
 // Query keys
 export const notificationKeys = {

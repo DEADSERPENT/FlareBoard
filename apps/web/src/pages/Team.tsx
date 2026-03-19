@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Card } from '@/components/ui/Card'
 import { useUsers } from '@/hooks/useUsers'
 import { useTasks } from '@/hooks/useTasks'
-import { Users, CheckCircle2, Clock, Circle } from 'lucide-react'
+import { Users, CheckCircle2, Clock, Mail, ListTodo } from 'lucide-react'
 
 export const TeamPage = () => {
   const { data: users = [], isLoading } = useUsers()
@@ -62,26 +62,26 @@ export const TeamPage = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 stagger-children">
+        <Card accent="orange">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center">
               <Users className="w-5 h-5 text-primary-600" />
             </div>
             <div>
-              <p className="text-xs text-neutral-500">Team Size</p>
-              <p className="text-2xl font-bold text-neutral-900">{totalStats.total}</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400">Team Size</p>
+              <p className="text-2xl font-black text-neutral-900 count-up">{totalStats.total}</p>
             </div>
           </div>
         </Card>
-        <Card>
+        <Card accent="blue">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-              <Circle className="w-5 h-5 text-green-600 fill-green-500" />
+            <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+              <Clock className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-xs text-neutral-500">Active Tasks</p>
-              <p className="text-2xl font-bold text-neutral-900">
+              <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400">Active</p>
+              <p className="text-2xl font-black text-neutral-900 count-up">
                 {totalStats.totalAssigned - totalStats.totalCompleted}
               </p>
             </div>
@@ -89,23 +89,23 @@ export const TeamPage = () => {
         </Card>
         <Card>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-              <Clock className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 rounded-xl bg-neutral-100 flex items-center justify-center">
+              <ListTodo className="w-5 h-5 text-neutral-600" />
             </div>
             <div>
-              <p className="text-xs text-neutral-500">Total Tasks</p>
-              <p className="text-2xl font-bold text-neutral-900">{totalStats.totalAssigned}</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400">Total Tasks</p>
+              <p className="text-2xl font-black text-neutral-900 count-up">{totalStats.totalAssigned}</p>
             </div>
           </div>
         </Card>
-        <Card>
+        <Card accent="green">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-              <CheckCircle2 className="w-5 h-5 text-purple-600" />
+            <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600" />
             </div>
             <div>
-              <p className="text-xs text-neutral-500">Completed</p>
-              <p className="text-2xl font-bold text-neutral-900">{totalStats.totalCompleted}</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400">Completed</p>
+              <p className="text-2xl font-black text-neutral-900 count-up">{totalStats.totalCompleted}</p>
             </div>
           </div>
         </Card>
@@ -183,8 +183,9 @@ export const TeamPage = () => {
                 </div>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-neutral-100 text-xs text-neutral-500">
-                <span>{member.email}</span>
+              <div className="mt-4 pt-3 border-t border-neutral-100 flex items-center gap-1.5 text-xs text-neutral-400">
+                <Mail className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">{member.email}</span>
               </div>
             </Card>
           )

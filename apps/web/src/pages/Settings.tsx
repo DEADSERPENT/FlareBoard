@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
 import { Modal } from '@/components/ui/Modal'
-import { User, Bell, Shield, Palette, Key, Trash2 } from 'lucide-react'
+import { User, Bell, Shield, Palette, Key, Trash2, Sun, Moon, Monitor, Mail, Globe, BellRing, Lock, Image, Save, RotateCcw } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/contexts/ToastContext'
 import { TrashModal } from '@/components/TrashModal'
@@ -179,24 +179,39 @@ export const SettingsPage = () => {
 
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Full Name"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-            />
-            <Input label="Email" type="email" value={user.email} disabled />
+            <div>
+              <label className="flex items-center gap-1.5 text-sm font-medium text-neutral-700 mb-2">
+                <User className="w-4 h-4 text-neutral-400" />
+                Full Name
+              </label>
+              <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
+            </div>
+            <div>
+              <label className="flex items-center gap-1.5 text-sm font-medium text-neutral-700 mb-2">
+                <Mail className="w-4 h-4 text-neutral-400" />
+                Email
+              </label>
+              <Input type="email" value={user.email} disabled />
+            </div>
           </div>
-          <Input
-            label="Avatar URL (optional)"
-            value={avatarUrl}
-            onChange={(e) => setAvatarUrl(e.target.value)}
-            placeholder="https://example.com/avatar.jpg"
-          />
+          <div>
+            <label className="flex items-center gap-1.5 text-sm font-medium text-neutral-700 mb-2">
+              <Image className="w-4 h-4 text-neutral-400" />
+              Avatar URL (optional)
+            </label>
+            <Input
+              value={avatarUrl}
+              onChange={(e) => setAvatarUrl(e.target.value)}
+              placeholder="https://example.com/avatar.jpg"
+            />
+          </div>
           <div className="flex justify-end gap-3">
             <Button variant="ghost" onClick={() => fetchProfile()}>
-              Cancel
+              <RotateCcw className="w-4 h-4" />
+              Reset
             </Button>
             <Button variant="primary" onClick={handleUpdateProfile} disabled={loading}>
+              <Save className="w-4 h-4" />
               {loading ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
@@ -219,53 +234,29 @@ export const SettingsPage = () => {
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-3">Color Theme</label>
             <div className="grid grid-cols-3 gap-4">
-              <button
-                onClick={() => handleThemeChange('light')}
-                className={`p-4 border-2 rounded-lg bg-white ${
-                  preferences?.theme === 'light' ? 'border-primary-500' : 'border-neutral-200 hover:border-neutral-300'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-neutral-900">Light</span>
-                  {preferences?.theme === 'light' && <Badge variant="orange">Active</Badge>}
-                </div>
-                <div className="flex gap-2">
-                  <div className="w-8 h-8 rounded bg-white border-2 border-neutral-200" />
-                  <div className="w-8 h-8 rounded bg-primary-500" />
-                </div>
-              </button>
-
-              <button
-                onClick={() => handleThemeChange('dark')}
-                className={`p-4 border-2 rounded-lg bg-white ${
-                  preferences?.theme === 'dark' ? 'border-primary-500' : 'border-neutral-200 hover:border-neutral-300'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-neutral-900">Dark</span>
-                  {preferences?.theme === 'dark' && <Badge variant="orange">Active</Badge>}
-                </div>
-                <div className="flex gap-2">
-                  <div className="w-8 h-8 rounded bg-neutral-900" />
-                  <div className="w-8 h-8 rounded bg-primary-500" />
-                </div>
-              </button>
-
-              <button
-                onClick={() => handleThemeChange('auto')}
-                className={`p-4 border-2 rounded-lg bg-white ${
-                  preferences?.theme === 'auto' ? 'border-primary-500' : 'border-neutral-200 hover:border-neutral-300'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-neutral-900">Auto</span>
-                  {preferences?.theme === 'auto' && <Badge variant="orange">Active</Badge>}
-                </div>
-                <div className="flex gap-2">
-                  <div className="w-8 h-8 rounded bg-gradient-to-br from-white to-neutral-900 border border-neutral-200" />
-                  <div className="w-8 h-8 rounded bg-primary-500" />
-                </div>
-              </button>
+              {[
+                { value: 'light', label: 'Light',  icon: Sun,     iconColor: 'text-amber-500',   bg: 'bg-amber-50' },
+                { value: 'dark',  label: 'Dark',   icon: Moon,    iconColor: 'text-indigo-500',  bg: 'bg-indigo-50' },
+                { value: 'auto',  label: 'System', icon: Monitor, iconColor: 'text-neutral-500', bg: 'bg-neutral-100' },
+              ].map(({ value, label, icon: ThemeIcon, iconColor, bg }) => (
+                <button
+                  key={value}
+                  onClick={() => handleThemeChange(value)}
+                  className={`p-4 border-2 rounded-xl transition-all ${
+                    preferences?.theme === value
+                      ? 'border-primary-500 shadow-sm'
+                      : 'border-neutral-200 hover:border-neutral-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className={`w-8 h-8 rounded-lg ${bg} flex items-center justify-center`}>
+                      <ThemeIcon className={`w-4 h-4 ${iconColor}`} />
+                    </div>
+                    {preferences?.theme === value && <Badge variant="orange">Active</Badge>}
+                  </div>
+                  <span className="text-sm font-medium text-neutral-900">{label}</span>
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -285,17 +276,22 @@ export const SettingsPage = () => {
 
         <div className="space-y-4">
           {[
-            { key: 'email', label: 'Email Notifications', description: 'Receive email updates for important events' },
-            { key: 'push', label: 'Push Notifications', description: 'Browser push notifications' },
-            { key: 'inApp', label: 'In-App Notifications', description: 'Notifications within the application' },
+            { key: 'email', label: 'Email Notifications', description: 'Receive email updates for important events', icon: Mail },
+            { key: 'push',  label: 'Push Notifications',  description: 'Browser push notifications',               icon: Globe },
+            { key: 'inApp', label: 'In-App Notifications', description: 'Notifications within the application',    icon: BellRing },
           ].map((item) => (
             <div
               key={item.key}
               className="flex items-center justify-between py-3 border-b border-neutral-100 last:border-0"
             >
-              <div>
-                <p className="font-medium text-neutral-900">{item.label}</p>
-                <p className="text-sm text-neutral-600">{item.description}</p>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                  <item.icon className="w-4 h-4 text-blue-500" />
+                </div>
+                <div>
+                  <p className="font-medium text-neutral-900">{item.label}</p>
+                  <p className="text-sm text-neutral-600">{item.description}</p>
+                </div>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
@@ -373,27 +369,24 @@ export const SettingsPage = () => {
         title="Change Password"
       >
         <div className="space-y-4">
-          <Input
-            label="Current Password"
-            type="password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            placeholder="Enter current password"
-          />
-          <Input
-            label="New Password"
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            placeholder="Enter new password"
-          />
-          <Input
-            label="Confirm New Password"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="Confirm new password"
-          />
+          {[
+            { label: 'Current Password', value: currentPassword, onChange: setCurrentPassword, placeholder: 'Enter current password' },
+            { label: 'New Password',     value: newPassword,     onChange: setNewPassword,     placeholder: 'Enter new password' },
+            { label: 'Confirm Password', value: confirmPassword, onChange: setConfirmPassword, placeholder: 'Confirm new password' },
+          ].map(({ label, value, onChange, placeholder }) => (
+            <div key={label}>
+              <label className="flex items-center gap-1.5 text-sm font-medium text-neutral-700 mb-2">
+                <Lock className="w-4 h-4 text-neutral-400" />
+                {label}
+              </label>
+              <Input
+                type="password"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder={placeholder}
+              />
+            </div>
+          ))}
           <div className="flex justify-end gap-3 pt-4">
             <Button variant="ghost" onClick={() => setShowPasswordModal(false)}>
               Cancel

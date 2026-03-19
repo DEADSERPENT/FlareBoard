@@ -10,7 +10,7 @@ import {
   DragOverEvent,
   closestCorners,
 } from '@dnd-kit/core'
-import { Plus, Filter, X } from 'lucide-react'
+import { Plus, X, FolderKanban, Flag, Users, Kanban } from 'lucide-react'
 import { KanbanColumn } from '../components/kanban/KanbanColumn'
 import { TaskCard } from '../components/kanban/TaskCard'
 import { TaskModal } from '../components/kanban/TaskModal'
@@ -84,7 +84,7 @@ export function KanbanPage() {
     }
   }
 
-  const handleDragOver = (event: DragOverEvent) => {
+  const handleDragOver = (_event: DragOverEvent) => {
     // Optional: You can add visual feedback here if needed
   }
 
@@ -194,18 +194,21 @@ export function KanbanPage() {
   return (
     <div className="h-full flex flex-col">
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-900">Kanban Board</h1>
-          <p className="text-neutral-600 mt-1">Manage your tasks with drag and drop</p>
+        <div className="flex items-center gap-2">
+          <Kanban className="w-5 h-5 text-primary-500" />
+          <div>
+            <h1 className="text-2xl font-bold text-neutral-900">Kanban Board</h1>
+            <p className="text-neutral-500 text-sm">Drag and drop to manage task status</p>
+          </div>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-neutral-500" />
+          <div className="flex items-center gap-1.5 px-3 py-2 bg-white border border-neutral-200 rounded-lg">
+            <FolderKanban className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
             <select
               value={selectedProject}
               onChange={(e) => setSelectedProject(e.target.value)}
-              className="px-3 py-2 bg-white border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="text-sm focus:outline-none bg-transparent text-neutral-700"
             >
               <option value="all">All Projects</option>
               {projects.map((project) => (
@@ -216,40 +219,46 @@ export function KanbanPage() {
             </select>
           </div>
 
-          <select
-            value={filterPriority}
-            onChange={(e) => setFilterPriority(e.target.value)}
-            className="px-3 py-2 bg-white border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-          >
-            <option value="all">All Priorities</option>
-            <option value="Urgent">Urgent</option>
-            <option value="High">High</option>
-            <option value="Medium">Medium</option>
-            <option value="Low">Low</option>
-          </select>
+          <div className="flex items-center gap-1.5 px-3 py-2 bg-white border border-neutral-200 rounded-lg">
+            <Flag className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+            <select
+              value={filterPriority}
+              onChange={(e) => setFilterPriority(e.target.value)}
+              className="text-sm focus:outline-none bg-transparent text-neutral-700"
+            >
+              <option value="all">All Priorities</option>
+              <option value="Urgent">Urgent</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
 
-          <select
-            value={filterAssignee}
-            onChange={(e) => setFilterAssignee(e.target.value)}
-            className="px-3 py-2 bg-white border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-          >
-            <option value="all">All Assignees</option>
-            {users.map((u) => (
-              <option key={u.id} value={u.id}>{u.fullName}</option>
-            ))}
-          </select>
+          <div className="flex items-center gap-1.5 px-3 py-2 bg-white border border-neutral-200 rounded-lg">
+            <Users className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+            <select
+              value={filterAssignee}
+              onChange={(e) => setFilterAssignee(e.target.value)}
+              className="text-sm focus:outline-none bg-transparent text-neutral-700"
+            >
+              <option value="all">All Assignees</option>
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>{u.fullName}</option>
+              ))}
+            </select>
+          </div>
 
           {hasActiveFilters && (
             <button
               onClick={() => { setFilterPriority('all'); setFilterAssignee('all') }}
               className="flex items-center gap-1 px-2 py-1 text-xs text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
             >
-              <X className="w-3 h-3" /> Clear filters
+              <X className="w-3 h-3" /> Clear
             </button>
           )}
 
           <Button variant="primary" size="sm" onClick={() => handleAddTask('Todo')}>
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="w-4 h-4 mr-1" />
             New Task
           </Button>
         </div>

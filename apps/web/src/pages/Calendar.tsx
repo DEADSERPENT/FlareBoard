@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button'
 import { useTasks, useCreateTask, useUpdateTaskOptimistic } from '@/hooks/useTasks'
 import { TaskModal } from '@/components/kanban/TaskModal'
 import { useProjects } from '@/hooks/useProjects'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, CalendarDays, CheckCircle2, AlertTriangle, CalendarPlus } from 'lucide-react'
 import type { Task } from '@flareboard/types'
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -25,7 +25,7 @@ export const CalendarPage = () => {
   const [currentDate, setCurrentDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1))
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
-  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [_selectedDate, setSelectedDate] = useState<string | null>(null)
 
   const { data: tasks = [] } = useTasks()
   const { data: projects = [] } = useProjects()
@@ -116,12 +116,18 @@ export const CalendarPage = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-neutral-900">Calendar</h1>
-          <p className="text-neutral-600 mt-1">View tasks by due date</p>
+        <div className="flex items-center gap-2">
+          <CalendarDays className="w-6 h-6 text-primary-500" />
+          <div>
+            <h1 className="text-2xl font-bold text-neutral-900">Calendar</h1>
+            <p className="text-neutral-500 text-sm">View and schedule tasks by due date</p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={goToday}>Today</Button>
+          <Button variant="ghost" size="sm" onClick={goToday}>
+            <CalendarPlus className="w-4 h-4" />
+            Today
+          </Button>
           <div className="flex items-center border border-neutral-200 rounded-lg overflow-hidden">
             <button
               onClick={prevMonth}
@@ -143,23 +149,38 @@ export const CalendarPage = () => {
       </div>
 
       {/* Month stats */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card>
-          <div className="text-center">
-            <p className="text-2xl font-bold text-neutral-900">{monthStats.total}</p>
-            <p className="text-xs text-neutral-500 mt-1">Tasks due this month</p>
+      <div className="grid grid-cols-3 gap-4 stagger-children">
+        <Card accent="orange">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center">
+              <CalendarDays className="w-5 h-5 text-primary-500" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400">Due This Month</p>
+              <p className="text-2xl font-black text-neutral-900 count-up">{monthStats.total}</p>
+            </div>
           </div>
         </Card>
-        <Card>
-          <div className="text-center">
-            <p className="text-2xl font-bold text-green-600">{monthStats.done}</p>
-            <p className="text-xs text-neutral-500 mt-1">Completed</p>
+        <Card accent="green">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+              <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400">Completed</p>
+              <p className="text-2xl font-black text-emerald-600 count-up">{monthStats.done}</p>
+            </div>
           </div>
         </Card>
-        <Card>
-          <div className="text-center">
-            <p className="text-2xl font-bold text-red-600">{monthStats.overdue}</p>
-            <p className="text-xs text-neutral-500 mt-1">Overdue</p>
+        <Card accent="red">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
+              <AlertTriangle className="w-5 h-5 text-red-500" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400">Overdue</p>
+              <p className="text-2xl font-black text-red-600 count-up">{monthStats.overdue}</p>
+            </div>
           </div>
         </Card>
       </div>

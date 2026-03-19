@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Bell, Check, Trash2, Settings } from 'lucide-react'
+import { Bell, Check, Trash2 } from 'lucide-react'
 import { NotificationItem } from './NotificationItem'
 import {
   useNotifications,

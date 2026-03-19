@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ShieldCheck, Trash2, Users, ChevronDown } from 'lucide-react'
+import { ShieldCheck, Trash2, Users, ChevronDown, Mail, Calendar, CheckSquare, UserMinus, UserCheck } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { Card } from '@/components/ui/Card'
@@ -70,37 +70,37 @@ export const AdminUsersPage = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card>
+      <div className="grid grid-cols-3 gap-4 stagger-children">
+        <Card accent="orange">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center">
               <Users className="w-5 h-5 text-primary-600" />
             </div>
             <div>
-              <p className="text-xs text-neutral-500">Total Users</p>
-              <p className="text-2xl font-bold text-neutral-900">{users.length}</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400">Total Users</p>
+              <p className="text-2xl font-black text-neutral-900 count-up">{users.length}</p>
             </div>
           </div>
         </Card>
-        <Card>
+        <Card accent="amber">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
               <ShieldCheck className="w-5 h-5 text-amber-600" />
             </div>
             <div>
-              <p className="text-xs text-neutral-500">Admins</p>
-              <p className="text-2xl font-bold text-neutral-900">{adminCount}</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400">Admins</p>
+              <p className="text-2xl font-black text-neutral-900 count-up">{adminCount}</p>
             </div>
           </div>
         </Card>
-        <Card>
+        <Card accent="blue">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-              <Users className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+              <UserCheck className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-xs text-neutral-500">Members</p>
-              <p className="text-2xl font-bold text-neutral-900">{memberCount}</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400">Members</p>
+              <p className="text-2xl font-black text-neutral-900 count-up">{memberCount}</p>
             </div>
           </div>
         </Card>
@@ -112,11 +112,21 @@ export const AdminUsersPage = () => {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-neutral-100">
-                <th className="text-left py-3 px-4 text-neutral-500 font-medium">User</th>
-                <th className="text-left py-3 px-4 text-neutral-500 font-medium">Email</th>
-                <th className="text-left py-3 px-4 text-neutral-500 font-medium">Role</th>
-                <th className="text-left py-3 px-4 text-neutral-500 font-medium">Tasks</th>
-                <th className="text-left py-3 px-4 text-neutral-500 font-medium">Joined</th>
+                <th className="text-left py-3 px-4 text-neutral-500 font-medium">
+                  <div className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" /> User</div>
+                </th>
+                <th className="text-left py-3 px-4 text-neutral-500 font-medium">
+                  <div className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5" /> Email</div>
+                </th>
+                <th className="text-left py-3 px-4 text-neutral-500 font-medium">
+                  <div className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" /> Role</div>
+                </th>
+                <th className="text-left py-3 px-4 text-neutral-500 font-medium">
+                  <div className="flex items-center gap-1.5"><CheckSquare className="w-3.5 h-3.5" /> Tasks</div>
+                </th>
+                <th className="text-left py-3 px-4 text-neutral-500 font-medium">
+                  <div className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> Joined</div>
+                </th>
                 <th className="py-3 px-4" />
               </tr>
             </thead>
@@ -175,9 +185,9 @@ export const AdminUsersPage = () => {
                               <button
                                 onClick={() => deleteMutation.mutate(user.id)}
                                 disabled={deleteMutation.isPending}
-                                className="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                                className="flex items-center gap-1 px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                               >
-                                Confirm
+                                <UserMinus className="w-3 h-3" /> Delete
                               </button>
                               <button
                                 onClick={() => setConfirmDelete(null)}

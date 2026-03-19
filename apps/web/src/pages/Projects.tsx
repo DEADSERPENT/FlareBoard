@@ -9,7 +9,7 @@ import { useTasks } from '@/hooks/useTasks'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/contexts/ToastContext'
 import { API_BASE } from '@/lib/api'
-import { Plus, FolderKanban, Calendar, User, TrendingUp, Edit, Trash2 } from 'lucide-react'
+import { Plus, FolderKanban, Calendar, Edit, Trash2, AlertTriangle, FileText, CheckCircle2, Archive, Layers } from 'lucide-react'
 
 interface Project {
   id: string
@@ -142,41 +142,43 @@ export const ProjectsPage = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 stagger-children">
+        <Card accent="orange">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-lg bg-primary-100 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center">
               <FolderKanban className="w-6 h-6 text-primary-600" />
             </div>
             <div>
-              <p className="text-sm text-neutral-600">Total Projects</p>
-              <p className="text-2xl font-bold text-neutral-900">{projects.length}</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400">Total Projects</p>
+              <p className="text-2xl font-black text-neutral-900 count-up">{projects.length}</p>
             </div>
           </div>
         </Card>
 
-        <Card>
+        <Card accent="green">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-green-600" />
+            <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
+              <CheckCircle2 className="w-6 h-6 text-emerald-600" />
             </div>
             <div>
-              <p className="text-sm text-neutral-600">Active Projects</p>
-              <p className="text-2xl font-bold text-neutral-900">
+              <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400">Active Projects</p>
+              <p className="text-2xl font-black text-neutral-900 count-up">
                 {projects.filter((p: any) => p.status === 'Active').length}
               </p>
             </div>
           </div>
         </Card>
 
-        <Card>
+        <Card accent="blue">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
-              <User className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
+              <Archive className="w-6 h-6 text-blue-600" />
             </div>
             <div>
-              <p className="text-sm text-neutral-600">Your Projects</p>
-              <p className="text-2xl font-bold text-neutral-900">{projects.length}</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400">Planning</p>
+              <p className="text-2xl font-black text-neutral-900 count-up">
+                {projects.filter((p: any) => p.status === 'Planning').length}
+              </p>
             </div>
           </div>
         </Card>
@@ -272,14 +274,22 @@ export const ProjectsPage = () => {
         title={editingProject ? 'Edit Project' : 'Create Project'}
       >
         <div className="space-y-4">
-          <Input
-            label="Project Name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="Enter project name"
-          />
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">Description</label>
+            <label className="flex items-center gap-1.5 text-sm font-medium text-neutral-700 mb-2">
+              <FolderKanban className="w-4 h-4 text-neutral-400" />
+              Project Name
+            </label>
+            <Input
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="Enter project name"
+            />
+          </div>
+          <div>
+            <label className="flex items-center gap-1.5 text-sm font-medium text-neutral-700 mb-2">
+              <FileText className="w-4 h-4 text-neutral-400" />
+              Description
+            </label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -289,7 +299,10 @@ export const ProjectsPage = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">Status</label>
+            <label className="flex items-center gap-1.5 text-sm font-medium text-neutral-700 mb-2">
+              <Layers className="w-4 h-4 text-neutral-400" />
+              Status
+            </label>
             <select
               value={formData.status}
               onChange={(e) => setFormData({ ...formData, status: e.target.value })}
@@ -319,10 +332,13 @@ export const ProjectsPage = () => {
         title="Delete Project"
       >
         <div className="space-y-4">
-          <p className="text-neutral-600">
-            Are you sure you want to delete this project? This action cannot be undone and will also
-            delete all associated tasks.
-          </p>
+          <div className="flex items-start gap-3 p-4 bg-red-50 rounded-xl border border-red-100">
+            <AlertTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+            <p className="text-sm text-red-700">
+              Are you sure you want to delete this project? This action cannot be undone and will also
+              delete all associated tasks.
+            </p>
+          </div>
           <div className="flex justify-end gap-3 pt-4">
             <Button variant="ghost" onClick={() => setDeleteConfirmId(null)}>
               Cancel
